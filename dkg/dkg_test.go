@@ -122,7 +122,7 @@ func TestDKGResharingPartial(t *testing.T) {
 	oldPrivs := test.GenerateIDs(oldN)
 	oldPubs := test.ListFromPrivates(oldPrivs)
 	oldShares, dpub := test.SimulateDKG(t, key.G2, oldN, oldT)
-	oldGroup := key.LoadGroup(oldPubs, &key.DistPublic{dpub}, oldT)
+	oldGroup := key.LoadGroup(oldPubs, &key.DistPublic{Coefficients: dpub}, oldT)
 
 	newN := oldN + 1
 	newT := oldT + 1
@@ -250,6 +250,82 @@ func TestDKGResharingPartial(t *testing.T) {
 	}
 }
 
+func TestDKGResharingRemoveNode(t *testing.T) {
+	slog.Level = slog.LevelDebug
+	oldN := 6
+	oldT := 5
+	oldPrivs := test.GenerateIDs(oldN)
+	oldPubs := test.ListFromPrivates(oldPrivs)
+
+	oldShares, dpub := test.SimulateDKG(t, key.G2, oldN, oldT)
+	oldGroup := key.LoadGroup(oldPubs, &key.DistPublic{Coefficients: dpub}, oldT)
+
+	newN := oldN - 1
+	newT := oldT - 1
+
+	newPrivs := oldPrivs[:newN]
+	newPubs := oldPubs[:newN]
+	newGroup := key.NewGroup(newPubs, newT)
+
+	require.Equal(t, len(newPrivs), newN)
+
+	nets := testNets(oldN, false)
+	handlers := make([]*Handler, oldN)
+	listeners := make([]net.Listener, oldN)
+	var err error
+
+	for i := 0; i < oldN; i++ {
+		share := key.Share{Commits: dpub, Share: oldShares[i]}
+		conf := &Config{
+			Suite:     key.G2.(Suite),
+			Key:       oldPrivs[i],
+			OldNodes:  oldGroup,
+			NewNodes:  newGroup,
+			Share:     &share,
+			Threshold: newT,
+		}
+		handlers[i], err = NewHandler(nets[i], conf)
+		require.NoError(t, err)
+
+		dkgServer := testDKGServer{h: handlers[i]}
+		listeners[i] = net.NewTCPGrpcListener(oldPrivs[i].Public.Addr, &net.DefaultService{D: &dkgServer})
+		go listeners[i].Start()
+	}
+
+	defer func() {
+		for i := range listeners {
+			listeners[i].Stop()
+		}
+	}()
+
+	finished := make(chan int, oldN)
+	goDkg := func(idx int) {
+		go handlers[idx].Start()
+		shareCh := handlers[idx].WaitShare()
+		errCh := handlers[idx].WaitError()
+		exitCh := handlers[idx].WaitExit()
+		select {
+		case <-shareCh:
+			finished <- idx
+		case <-exitCh:
+			finished <- idx
+		case err := <-errCh:
+			require.NoError(t, err)
+		case <-time.After(3 * time.Second):
+			fmt.Println("timeout")
+			t.Fatal("not finished in time")
+		}
+	}
+
+	for i := 0; i < oldN; i++ {
+		go goDkg(i)
+	}
+
+	for i := 0; i < newN; i++ {
+		<-finished
+	}
+}
+
 func TestDKGResharingNewNode(t *testing.T) {
 	slog.Level = slog.LevelDebug
 	oldN := 5
@@ -258,7 +334,7 @@ func TestDKGResharingNewNode(t *testing.T) {
 	oldPubs := test.ListFromPrivates(oldPrivs)
 
 	oldShares, dpub := test.SimulateDKG(t, key.G2, oldN, oldT)
-	oldGroup := key.LoadGroup(oldPubs, &key.DistPublic{dpub}, oldT)
+	oldGroup := key.LoadGroup(oldPubs, &key.DistPublic{Coefficients: dpub}, oldT)
 
 	newN := oldN + 1
 	newT := oldT + 1

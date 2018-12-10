@@ -43,7 +43,7 @@
 
 [[projects]]
   branch = "group_info"
-  digest = "1:007539683a55b0c5ac355712942176b521af52b9c011c3f1ae7d9fd08a5fac70"
+  digest = "1:66d7ecd08ecd029b9a75c82780b0b5a758b708ddd7dde6c5f56a8b5960273649"
   name = "github.com/dedis/kyber"
   packages = [
     ".",
@@ -65,7 +65,7 @@
     "xof/blake2xb",
   ]
   pruneopts = "UT"
-  revision = "68fa3c771c3bc062ba45008ab08c760f8d4eddbe"
+  revision = "546132f954b83e774debd8b3b8bfdfda36af05ef"
 
 [[projects]]
   digest = "1:2bc670753d702d189816576bff13ad9abe6a3a23ffe9d2e06b8b92799856598f"
