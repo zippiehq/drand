@@ -135,7 +135,12 @@ var timeoutFlag = cli.StringFlag{
 
 var pushFlag = cli.BoolFlag{
 	Name:  "push",
-	Usage: "Push  mode forces the daemon to start making beacon requests to the other node, instead of waiting the other nodes contact it to catch-up on the round",
+	Usage: "Push mode forces the daemon to start making beacon requests to the other node, instead of waiting the other nodes contact it to catch-up on the round",
+}
+
+var sourceFlag = cli.StringFlag{
+	Name:  "source",
+	Usage: "Source flag allows to use the given file as additional entropy during resharing step.",
 }
 
 func main() {
@@ -179,7 +184,7 @@ func main() {
 				"this daemon start the protocol\n",
 			ArgsUsage: "<group.toml> group file",
 			Flags: toArray(folderFlag, insecureFlag, controlFlag,
-				leaderFlag, oldGroupFlag, timeoutFlag),
+				leaderFlag, oldGroupFlag, timeoutFlag, sourceFlag),
 			Action: func(c *cli.Context) error {
 				banner()
 				return shareCmd(c)

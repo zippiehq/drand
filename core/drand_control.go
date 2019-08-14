@@ -119,6 +119,9 @@ func (d *Drand) InitReshare(c context.Context, in *control.ReshareRequest) (*con
 			}
 		}
 
+		seed := in.Seed
+		// TODO: use seed as entropy source
+		fmt.Print(seed)
 		// prepare dkg config to run the protocol
 		conf := &dkg.Config{
 			OldNodes: oldGroup,
