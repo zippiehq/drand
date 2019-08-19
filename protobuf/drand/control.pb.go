@@ -121,7 +121,7 @@ type ReshareRequest struct {
 	IsLeader bool       `protobuf:"varint,3,opt,name=is_leader,json=isLeader,proto3" json:"is_leader,omitempty"`
 	// timeout as parsed by Golang's time.ParseDuration method.
 	Timeout              string   `protobuf:"bytes,4,opt,name=timeout,proto3" json:"timeout,omitempty"`
-	Seed                 []byte   `protobuf:"bytes,5,opt,name=seed,proto3" json:"seed"`
+	Entropy              []byte   `protobuf:"bytes,5,opt,name=entropy,proto3" json:"entropy"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -179,9 +179,9 @@ func (m *ReshareRequest) GetTimeout() string {
 	return ""
 }
 
-func (m *ReshareRequest) GetSeed() []byte {
+func (m *ReshareRequest) GetEntropy() []byte {
 	if m != nil {
-		return m.Seed
+		return m.Entropy
 	}
 	return nil
 }

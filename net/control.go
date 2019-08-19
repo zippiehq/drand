@@ -72,7 +72,7 @@ func (c *ControlClient) Ping() error {
 // start the protocol.
 // NOTE: only group referral via filesystem path is supported at the moment.
 // XXX Might be best to move to core/
-func (c *ControlClient) InitReshare(oldPath, newPath string, leader bool, timeout string, seed []byte) (*control.ReshareResponse, error) {
+func (c *ControlClient) InitReshare(oldPath, newPath string, leader bool, timeout string, src []byte) (*control.ReshareResponse, error) {
 	request := &control.ReshareRequest{
 		Old: &control.GroupInfo{
 			Location: &control.GroupInfo_Path{Path: oldPath},
@@ -82,7 +82,7 @@ func (c *ControlClient) InitReshare(oldPath, newPath string, leader bool, timeou
 		},
 		IsLeader: leader,
 		Timeout:  timeout,
-		Seed:     seed,
+		Entropy:  src,
 	}
 	return c.client.InitReshare(context.Background(), request)
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/sha512"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -83,8 +82,6 @@ func initDKG(c *cli.Context, groupPath string) error {
 func initReshare(c *cli.Context, newGroupPath string) error {
 	var isLeader = c.Bool(leaderFlag.Name)
 	var oldGroupPath string
-	var entropyFile string
-	var seed []byte
 
 	if c.IsSet(oldGroupFlag.Name) {
 		oldGroupPath = c.String(oldGroupFlag.Name)
@@ -93,20 +90,18 @@ func initReshare(c *cli.Context, newGroupPath string) error {
 		fmt.Print("drand: old group path not specified. Using daemon's own group if possible.")
 	}
 
+	var b []byte
 	if c.IsSet(sourceFlag.Name) {
-		entropyFile = c.String(sourceFlag.Name)
+		entropyFile := c.String(sourceFlag.Name)
 		b, err := ioutil.ReadFile(entropyFile)
 		if err != nil {
 			fmt.Print("drand: could not read the file for additional entropy because: " + err.Error())
 		}
-		sha := sha512.New()
-		sha.Write(b)
-		seed := sha.Sum(nil)
 	}
 
 	client := controlClient(c)
 	fmt.Println("drand: initiating resharing protocol. Waiting to the end ...")
-	_, err := client.InitReshare(oldGroupPath, newGroupPath, isLeader, c.String(timeoutFlag.Name), seed)
+	_, err := client.InitReshare(oldGroupPath, newGroupPath, isLeader, c.String(timeoutFlag.Name), b)
 	if err != nil {
 		fatal("drand: error resharing: %s", err)
 	}
