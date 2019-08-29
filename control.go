@@ -94,12 +94,16 @@ func initReshare(c *cli.Context, newGroupPath string) error {
 	if c.IsSet(sourceFlag.Name) {
 		f, err := os.Open(sourceFlag.Name)
 		if err != nil {
-			fmt.Print("drand: file provided as additional entropy cannot be used")
-		} else {
-			source = c.String(sourceFlag.Name)
+			fatal("drand: file provided as additional entropy cannot be used: %s", err)
 		}
+		b := make([]byte, 1)
+		n, err := f.Read(b)
+		if err != nil || n == 0 {
+			fatal("drand: file provided as additional entropy cannot be used: %s", err)
+		}
+		// TODO: more testing?
+		source = c.String(sourceFlag.Name)
 		f.Close()
-		// TODO: checks on source before sending it further
 	}
 
 	client := controlClient(c)
