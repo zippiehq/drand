@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/BurntSushi/toml"
@@ -124,7 +125,15 @@ func (d *Drand) InitReshare(c context.Context, in *control.ReshareRequest) (*con
 			NewNodes: newGroup,
 			Key:      d.priv,
 			Suite:    key.G2.(dkg.Suite),
-			//RandomStream: random.New(Reader with in.Entropy),
+		}
+
+		if in.Entropy != "" {
+			reader, err := os.Open(in.Entropy)
+			if err != nil {
+				d.log.With("module", "control").Error("could not use source file as additional entropy during resharing", err)
+			} else {
+				conf.Reader = reader
+			}
 		}
 
 		// run the proto

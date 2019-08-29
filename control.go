@@ -90,18 +90,21 @@ func initReshare(c *cli.Context, newGroupPath string) error {
 		fmt.Print("drand: old group path not specified. Using daemon's own group if possible.")
 	}
 
-	var b []byte
+	var source string
 	if c.IsSet(sourceFlag.Name) {
-		entropyFile := c.String(sourceFlag.Name)
-		b, err := ioutil.ReadFile(entropyFile)
+		f, err := os.Open(sourceFlag.Name)
 		if err != nil {
-			fmt.Print("drand: could not read the file for additional entropy because: " + err.Error())
+			fmt.Print("drand: file provided as additional entropy cannot be used")
+		} else {
+			source = c.String(sourceFlag.Name)
 		}
+		f.Close()
+		// TODO: checks on source before sending it further
 	}
 
 	client := controlClient(c)
 	fmt.Println("drand: initiating resharing protocol. Waiting to the end ...")
-	_, err := client.InitReshare(oldGroupPath, newGroupPath, isLeader, c.String(timeoutFlag.Name), b)
+	_, err := client.InitReshare(oldGroupPath, newGroupPath, isLeader, c.String(timeoutFlag.Name), source)
 	if err != nil {
 		fatal("drand: error resharing: %s", err)
 	}

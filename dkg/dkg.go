@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 	"sync"
@@ -35,6 +36,7 @@ type Config struct {
 	OldNodes *key.Group
 	Share    *key.Share
 	Timeout  time.Duration
+	Reader   io.Reader
 }
 
 // Share represents the private information that a node holds after a successful
@@ -93,6 +95,7 @@ func NewHandler(n Network, c *Config, l log.Logger) (*Handler, error) {
 		PublicCoeffs: dpub,
 		Share:        share,
 		Threshold:    c.NewNodes.Threshold,
+		Reader:       c.Reader,
 	}
 
 	if c.OldNodes != nil {

@@ -102,7 +102,7 @@ func TestDrandDKGReshareTimeout(t *testing.T) {
 			// instruct to be ready for a reshare
 			client, err := net.NewControlClient(d.opts.controlPort)
 			require.NoError(t, err)
-			_, err = client.InitReshare(oldPath, newPath, false, timeout, nil)
+			_, err = client.InitReshare(oldPath, newPath, false, timeout, "")
 			fmt.Printf("drand %s: %v\n", d.priv.Public.Addr, err)
 			require.NoError(t, err)
 			wg.Done()
@@ -121,7 +121,7 @@ func TestDrandDKGReshareTimeout(t *testing.T) {
 		//err := root.StartDKG(c)
 		client, err := net.NewControlClient(root.opts.controlPort)
 		require.NoError(t, err)
-		_, err = client.InitReshare(oldPath, newPath, true, timeout, nil)
+		_, err = client.InitReshare(oldPath, newPath, true, timeout, "")
 		require.NoError(t, err)
 		dkgDone <- true
 	}()
@@ -197,7 +197,7 @@ func TestDrandDKGReshare(t *testing.T) {
 			// instruct to be ready for a reshare
 			client, err := net.NewControlClient(d.opts.controlPort)
 			require.NoError(t, err)
-			_, err = client.InitReshare(oldPath, newPath, false, "", nil)
+			_, err = client.InitReshare(oldPath, newPath, false, "", "")
 			require.NoError(t, err)
 			wg.Done()
 		}(drand, i)
@@ -212,7 +212,7 @@ func TestDrandDKGReshare(t *testing.T) {
 	//err := root.StartDKG(c)
 	client, err := net.NewControlClient(root.opts.controlPort)
 	require.NoError(t, err)
-	_, err = client.InitReshare(oldPath, newPath, true, "", nil)
+	_, err = client.InitReshare(oldPath, newPath, true, "", "")
 	require.NoError(t, err)
 	//err = root.WaitDKG()
 	//require.NoError(t, err)

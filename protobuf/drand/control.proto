@@ -55,7 +55,7 @@ message ReshareRequest {
     bool is_leader = 3;
     // timeout as parsed by Golang's time.ParseDuration method.
     string timeout = 4;
-    bytes entropy = 5;
+    string entropy = 5;
 }
 
 message GroupInfo {
