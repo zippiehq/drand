@@ -90,6 +90,10 @@ func initReshare(c *cli.Context, newGroupPath string) error {
 		fmt.Print("drand: old group path not specified. Using daemon's own group if possible.")
 	}
 
+	if c.IsSet(userEntropyOnlyFlag.Name) && !c.IsSet(sourceFlag.Name) {
+		fmt.Print("drand: userEntropyOnly needs to be used with the source flag, which is not specified here. userEntropyOnly flag is ignored.")
+	}
+
 	var source string
 	if c.IsSet(sourceFlag.Name) {
 		f, err := os.Open(sourceFlag.Name)
@@ -102,13 +106,17 @@ func initReshare(c *cli.Context, newGroupPath string) error {
 			fatal("drand: file provided as additional entropy cannot be used: %s", err)
 		}
 		// TODO: more testing?
-		source = c.String(sourceFlag.Name)
 		f.Close()
+		source = c.String(sourceFlag.Name)
+		userOnly := false
+		if c.IsSet(userEntropyOnlyFlag.Name) {
+			userOnly = true
+		}
 	}
 
 	client := controlClient(c)
 	fmt.Println("drand: initiating resharing protocol. Waiting to the end ...")
-	_, err := client.InitReshare(oldGroupPath, newGroupPath, isLeader, c.String(timeoutFlag.Name), source)
+	_, err := client.InitReshare(oldGroupPath, newGroupPath, isLeader, c.String(timeoutFlag.Name), source, userOnly)
 	if err != nil {
 		fatal("drand: error resharing: %s", err)
 	}

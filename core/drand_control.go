@@ -133,6 +133,9 @@ func (d *Drand) InitReshare(c context.Context, in *control.ReshareRequest) (*con
 				d.log.With("module", "control").Error("could not use source file as additional entropy during resharing", err)
 			} else {
 				conf.Reader = reader
+				if in.UserOnly {
+					conf.UserReaderOnly = true
+				}
 			}
 		}
 

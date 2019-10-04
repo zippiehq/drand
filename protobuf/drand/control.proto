@@ -56,6 +56,7 @@ message ReshareRequest {
     // timeout as parsed by Golang's time.ParseDuration method.
     string timeout = 4;
     string entropy = 5;
+    bool userOnly = 6;
 }
 
 message GroupInfo {
