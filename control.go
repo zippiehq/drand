@@ -105,7 +105,8 @@ func initReshare(c *cli.Context, newGroupPath string) error {
 		if err != nil || n == 0 {
 			fatal("drand: file provided as additional entropy cannot be used: %s", err)
 		}
-		// TODO: more testing?
+		//rewind not to "lose" the byte we read as test
+		f.Seek(0, 0)
 		f.Close()
 		source = c.String(sourceFlag.Name)
 		userOnly := false
