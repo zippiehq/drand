@@ -82,7 +82,12 @@ func NewHandler(c net.ProtocolClient, s Store, conf *Config, l log.Logger) (*Han
 	}
 	idx, exists := conf.Group.Index(conf.Private.Public)
 	if !exists {
+<<<<<<< HEAD
 		return nil, errors.New("beacon: keypair not included in the given group")
+=======
+		// XXX Should it return an error instead ... ?
+		panic("drand: can't handle a keypair not included in the given group")
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	}
 
 	addr := conf.Group.Nodes[idx].Addr

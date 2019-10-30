@@ -8,6 +8,7 @@ language: go
 
 go:
     - tip
+<<<<<<< HEAD
 
 env:
     - GO111MODULE=on
@@ -17,6 +18,8 @@ install: true
 
 before_script: 
     - docker build -t drand-it . #docker-compose should be self-sufficient, but fails on travis...
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 
 script:
     - make test-unit
@@ -31,3 +34,23 @@ after_success:
 
 before_deploy:
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+<<<<<<< HEAD
+=======
+
+before_install:
+    - docker pull byrnedo/alpine-curl
+
+# calls goreleaser
+deploy:
+  - provider: script
+    skip_cleanup: true
+    script: curl -sL https://git.io/goreleaser | bash
+    on:
+      tags: true
+      condition: $TRAVIS_OS_NAME = linux
+  #- provider: script
+    #script: docker push dedis/drand:$TRAVIS_TAG
+    #on:
+        #tags: true
+        #condition: $TRAVIS_OS_NAME = linux
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128

@@ -5,7 +5,11 @@ import (
 	"fmt"
 	"net"
 
+<<<<<<< HEAD
 	control "github.com/dedis/drand/protobuf/drand"
+=======
+	"github.com/dedis/drand/protobuf/control"
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	"github.com/nikkolasg/slog"
 	"google.golang.org/grpc"
 )
@@ -28,14 +32,20 @@ func NewTCPGrpcControlListener(s control.ControlServer, port string) ControlList
 	return ControlListener{conns: grpcServer, lis: lis}
 }
 
+<<<<<<< HEAD
 // Start the listener for the control commands
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 func (g *ControlListener) Start() {
 	if err := g.conns.Serve(g.lis); err != nil {
 		slog.Fatalf("failed to serve: %s", err)
 	}
 }
 
+<<<<<<< HEAD
 // Stop the listener and connections
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 func (g *ControlListener) Stop() {
 	g.conns.Stop()
 }
@@ -60,7 +70,10 @@ func NewControlClient(port string) (*ControlClient, error) {
 	return &ControlClient{conn: conn, client: c}, nil
 }
 
+<<<<<<< HEAD
 // Ping the drand daemon to check if it's up and running
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 func (c *ControlClient) Ping() error {
 	_, err := c.client.PingPong(context.Background(), &control.Ping{})
 	return err
@@ -72,6 +85,7 @@ func (c *ControlClient) Ping() error {
 // start the protocol.
 // NOTE: only group referral via filesystem path is supported at the moment.
 // XXX Might be best to move to core/
+<<<<<<< HEAD
 func (c *ControlClient) InitReshare(oldPath, newPath string, leader bool, timeout string) (*control.Empty, error) {
 	request := &control.InitResharePacket{
 		Old: &control.GroupInfo{
@@ -82,6 +96,17 @@ func (c *ControlClient) InitReshare(oldPath, newPath string, leader bool, timeou
 		},
 		IsLeader: leader,
 		Timeout:  timeout,
+=======
+func (c *ControlClient) InitReshare(oldPath, newPath string, leader bool) (*control.ReshareResponse, error) {
+	request := &control.ReshareRequest{
+		Old: &control.GroupInfo{
+			Location: &control.GroupInfo_Path{oldPath},
+		},
+		New: &control.GroupInfo{
+			Location: &control.GroupInfo_Path{newPath},
+		},
+		IsLeader: leader,
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	}
 	return c.client.InitReshare(context.Background(), request)
 }
@@ -90,6 +115,7 @@ func (c *ControlClient) InitReshare(oldPath, newPath string, leader bool, timeou
 // groupPart
 // NOTE: only group referral via filesystem path is supported at the moment.
 // XXX Might be best to move to core/
+<<<<<<< HEAD
 func (c *ControlClient) InitDKG(groupPath string, leader bool, timeout string) (*control.Empty, error) {
 	request := &control.InitDKGPacket{
 		DkgGroup: &control.GroupInfo{
@@ -97,11 +123,20 @@ func (c *ControlClient) InitDKG(groupPath string, leader bool, timeout string) (
 		},
 		IsLeader: leader,
 		Timeout:  timeout,
+=======
+func (c *ControlClient) InitDKG(groupPath string, leader bool) (*control.DKGResponse, error) {
+	request := &control.DKGRequest{
+		DkgGroup: &control.GroupInfo{
+			Location: &control.GroupInfo_Path{groupPath},
+		},
+		IsLeader: leader,
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	}
 	return c.client.InitDKG(context.Background(), request)
 
 }
 
+<<<<<<< HEAD
 // Share returns the share of the remote node
 func (c ControlClient) Share() (*control.ShareResponse, error) {
 	return c.client.Share(context.Background(), &control.ShareRequest{})
@@ -125,6 +160,22 @@ func (c ControlClient) CollectiveKey() (*control.CokeyResponse, error) {
 // GroupFile returns the TOML-encoded group file
 func (c ControlClient) GroupFile() (*control.GroupTOMLResponse, error) {
 	return c.client.GroupFile(context.Background(), &control.GroupTOMLRequest{})
+=======
+func (c ControlClient) Share() (*control.ShareResponse, error) {
+	return c.client.Share(context.Background(), &control.ShareRequest{})
+}
+func (c ControlClient) PublicKey() (*control.PublicKeyResponse, error) {
+	return c.client.PublicKey(context.Background(), &control.PublicKeyRequest{})
+}
+func (c ControlClient) PrivateKey() (*control.PrivateKeyResponse, error) {
+	return c.client.PrivateKey(context.Background(), &control.PrivateKeyRequest{})
+}
+func (c ControlClient) CollectiveKey() (*control.CokeyResponse, error) {
+	return c.client.CollectiveKey(context.Background(), &control.CokeyRequest{})
+}
+func (c *ControlClient) Group() (*control.GroupResponse, error) {
+	return c.client.Group(context.Background(), &control.GroupRequest{})
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 }
 
 func controlListenAddr(port string) string {
@@ -136,11 +187,15 @@ type DefaultControlServer struct {
 	C control.ControlServer
 }
 
+<<<<<<< HEAD
 // PingPong ...
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 func (s *DefaultControlServer) PingPong(c context.Context, in *control.Ping) (*control.Pong, error) {
 	return &control.Pong{}, nil
 }
 
+<<<<<<< HEAD
 // Share ...
 func (s *DefaultControlServer) Share(c context.Context, in *control.ShareRequest) (*control.ShareResponse, error) {
 	if s.C == nil {
@@ -171,4 +226,41 @@ func (s *DefaultControlServer) CollectiveKey(c context.Context, in *control.Coke
 		return &control.CokeyResponse{}, nil
 	}
 	return s.C.CollectiveKey(c, in)
+=======
+func (s *DefaultControlServer) Share(c context.Context, in *control.ShareRequest) (*control.ShareResponse, error) {
+	if s.C == nil {
+		return &control.ShareResponse{}, nil
+	} else {
+		return s.C.Share(c, in)
+	}
+}
+func (s *DefaultControlServer) PublicKey(c context.Context, in *control.PublicKeyRequest) (*control.PublicKeyResponse, error) {
+	if s.C == nil {
+		return &control.PublicKeyResponse{}, nil
+	} else {
+		return s.C.PublicKey(c, in)
+	}
+}
+func (s *DefaultControlServer) PrivateKey(c context.Context, in *control.PrivateKeyRequest) (*control.PrivateKeyResponse, error) {
+	if s.C == nil {
+		return &control.PrivateKeyResponse{}, nil
+	} else {
+		return s.C.PrivateKey(c, in)
+	}
+}
+func (s *DefaultControlServer) CollectiveKey(c context.Context, in *control.CokeyRequest) (*control.CokeyResponse, error) {
+	if s.C == nil {
+		return &control.CokeyResponse{}, nil
+	} else {
+		return s.C.CollectiveKey(c, in)
+	}
+}
+
+func (s *DefaultControlServer) Group(c context.Context, in *control.GroupRequest) (*control.GroupResponse, error) {
+	if s.C == nil {
+		return &control.GroupResponse{}, nil
+	} else {
+		return s.C.Group(c, in)
+	}
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 }

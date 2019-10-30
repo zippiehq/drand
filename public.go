@@ -1,9 +1,19 @@
 package main
 
 import (
+<<<<<<< HEAD
 	"github.com/dedis/drand/core"
 	"github.com/dedis/drand/net"
 	"github.com/dedis/drand/protobuf/drand"
+=======
+	"encoding/hex"
+
+	"github.com/dedis/drand/core"
+	"github.com/dedis/drand/key"
+	"github.com/dedis/drand/net"
+	"github.com/dedis/drand/protobuf/drand"
+	"github.com/dedis/kyber"
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	"github.com/nikkolasg/slog"
 	"github.com/urfave/cli"
 )
@@ -34,6 +44,7 @@ func getPrivateCmd(c *cli.Context) error {
 	}
 
 	type private struct {
+<<<<<<< HEAD
 		Randomness []byte
 	}
 
@@ -42,6 +53,16 @@ func getPrivateCmd(c *cli.Context) error {
 }
 
 func getPublicRandomness(c *cli.Context) error {
+=======
+		Randomness string
+	}
+
+	printJSON(&private{hex.EncodeToString(resp)})
+	return nil
+}
+
+func getPublicCmd(c *cli.Context) error {
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	if !c.Args().Present() {
 		slog.Fatal("Get public command takes a group file as argument.")
 	}
@@ -73,8 +94,23 @@ func getPublicRandomness(c *cli.Context) error {
 		}
 		slog.Printf("drand: could not get public randomness from %s: %s", id.Addr, err)
 	}
+<<<<<<< HEAD
 
 	printJSON(resp)
+=======
+	type publicRand struct {
+		Round      uint64
+		Previous   string
+		Randomness string
+	}
+	s := &publicRand{
+		Round:      resp.Round,
+		Previous:   hex.EncodeToString(resp.Previous),
+		Randomness: hex.EncodeToString(resp.Randomness),
+	}
+
+	printJSON(s)
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	return nil
 }
 
@@ -85,7 +121,11 @@ func getCokeyCmd(c *cli.Context) error {
 	}
 	ids := getNodes(c)
 	client := core.NewGrpcClientFromCert(defaultManager)
+<<<<<<< HEAD
 	var dkey *drand.DistKeyResponse
+=======
+	var dkey kyber.Point
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	var err error
 	for _, id := range ids {
 		dkey, err = client.DistKey(id.Addr, !c.Bool("tls-disable"))
@@ -98,6 +138,14 @@ func getCokeyCmd(c *cli.Context) error {
 	if dkey == nil {
 		slog.Fatalf("drand: can't retrieve dist. key from all nodes")
 	}
+<<<<<<< HEAD
 	printJSON(dkey)
+=======
+	str := key.PointToString(dkey)
+	type distkey struct {
+		CollectiveKey string
+	}
+	printJSON(&distkey{str})
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	return nil
 }

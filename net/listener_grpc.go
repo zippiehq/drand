@@ -7,6 +7,10 @@ import (
 	"net/http"
 	"strings"
 
+<<<<<<< HEAD
+=======
+	"github.com/dedis/drand/protobuf/dkg"
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	"github.com/dedis/drand/protobuf/drand"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/nikkolasg/slog"

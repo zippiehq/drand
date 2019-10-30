@@ -95,7 +95,11 @@ func (f *fileStore) SaveKeyPair(p *Pair) error {
 	if err := Save(f.privateKeyFile, p, true); err != nil {
 		return err
 	}
+<<<<<<< HEAD
 	fmt.Printf("Saved the key : %s at %s\n", p.Public.Addr, f.publicKeyFile)
+=======
+	slog.Infof("Saved the key : %s at %s", p.Public.Addr, f.publicKeyFile)
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	return Save(f.publicKeyFile, p.Public, false)
 }
 

@@ -1,35 +1,60 @@
+<<<<<<< HEAD
 package key
 
 // Group is a list of Public keys providing helper methods to search and
 
 import (
 	"bytes"
+=======
+// Group is a list of Public keys providing helper methods to search and
+package key
+
+import (
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"time"
 
+<<<<<<< HEAD
 	"github.com/BurntSushi/toml"
 	"github.com/dchest/blake2b"
 	kyber "go.dedis.ch/kyber/v3"
 	vss "go.dedis.ch/kyber/v3/share/vss/pedersen"
+=======
+	"github.com/dchest/blake2b"
+	kyber "github.com/dedis/kyber"
+	vss "github.com/dedis/kyber/share/vss/pedersen"
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 )
 
 // Group holds all information about a group of drand nodes.
 type Group struct {
+<<<<<<< HEAD
 	// Threshold to setup during the DKG or resharing protocol.
 	Threshold int
 	// Period to use for the beacon randomness generation
 	Period time.Duration
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	// List of identities forming this group
 	Nodes []*Identity
 	// The distributed public key of this group. It is nil if the group has not
 	// ran a DKG protocol yet.
 	PublicKey *DistPublic
+<<<<<<< HEAD
 }
 
 // Identities return the underlying slice of identities
+=======
+	// Threshold to setup during the DKG or resharing protocol.
+	Threshold int
+	// Period to use for the beacon randomness generation
+	Period time.Duration
+}
+
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 func (g *Group) Identities() []*Identity {
 	return g.Nodes
 }
@@ -99,6 +124,7 @@ func (g *Group) Len() int {
 	return len(g.Nodes)
 }
 
+<<<<<<< HEAD
 func (g *Group) String() string {
 	var b bytes.Buffer
 	toml.NewEncoder(&b).Encode(g.TOML())
@@ -111,6 +137,14 @@ type GroupTOML struct {
 	Period    string
 	Nodes     []*PublicTOML
 	PublicKey *DistPublicTOML
+=======
+// GroupTOML is the representation of a Group TOML compatible
+type GroupTOML struct {
+	Nodes     []*PublicTOML
+	PublicKey *DistPublicTOML
+	Threshold int
+	Period    string
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 }
 
 // FromTOML decodes the group from the toml struct
@@ -124,7 +158,11 @@ func (g *Group) FromTOML(i interface{}) (err error) {
 	for i, ptoml := range gt.Nodes {
 		g.Nodes[i] = new(Identity)
 		if err := g.Nodes[i].FromTOML(ptoml); err != nil {
+<<<<<<< HEAD
 			return fmt.Errorf("group: unwrapping node[%d]: %v", i, err)
+=======
+			return err
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		}
 	}
 
@@ -138,7 +176,11 @@ func (g *Group) FromTOML(i interface{}) (err error) {
 		// dist key only if dkg ran
 		g.PublicKey = &DistPublic{}
 		if err = g.PublicKey.FromTOML(gt.PublicKey); err != nil {
+<<<<<<< HEAD
 			return fmt.Errorf("group: unwrapping distributed public key: %v", err)
+=======
+			return err
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		}
 	}
 	g.Period, err = time.ParseDuration(gt.Period)
@@ -147,9 +189,13 @@ func (g *Group) FromTOML(i interface{}) (err error) {
 
 // TOML returns a TOML-encodable version of the Group
 func (g *Group) TOML() interface{} {
+<<<<<<< HEAD
 	gtoml := &GroupTOML{
 		Threshold: g.Threshold,
 	}
+=======
+	gtoml := &GroupTOML{Threshold: g.Threshold}
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	gtoml.Nodes = make([]*PublicTOML, g.Len())
 	for i, p := range g.Nodes {
 		gtoml.Nodes[i] = p.TOML().(*PublicTOML)
@@ -184,8 +230,11 @@ func (g *Group) MergeGroup(list []*Identity) *Group {
 
 // NewGroup returns a list of identities as a Group.
 func NewGroup(list []*Identity, threshold int) *Group {
+<<<<<<< HEAD
 	// XXX can't do that now since relying on index in the group in dkg and test
 	//sort.Sort(ByKey(list))
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	return &Group{
 		Nodes:     list,
 		Threshold: threshold,
@@ -194,7 +243,10 @@ func NewGroup(list []*Identity, threshold int) *Group {
 
 // LoadGroup returns a group associated with a given public key
 func LoadGroup(list []*Identity, public *DistPublic, threshold int) *Group {
+<<<<<<< HEAD
 	//sort.Sort(ByKey(list))
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	return &Group{
 		Nodes:     list,
 		Threshold: threshold,

@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+<<<<<<< HEAD
 	"errors"
 	"fmt"
 	"time"
@@ -16,6 +17,24 @@ import (
 
 // Setup is the public method to call during a DKG protocol.
 func (d *Drand) Setup(c context.Context, in *drand.SetupPacket) (*drand.Empty, error) {
+=======
+	"crypto/rand"
+	"errors"
+	"fmt"
+
+	"github.com/dedis/drand/beacon"
+	"github.com/dedis/drand/ecies"
+	"github.com/dedis/drand/key"
+	"github.com/dedis/drand/protobuf/crypto"
+	dkg_proto "github.com/dedis/drand/protobuf/dkg"
+	"github.com/dedis/drand/protobuf/drand"
+	"github.com/dedis/kyber"
+	"github.com/nikkolasg/slog"
+)
+
+// Setup is the public method to call during a DKG protocol.
+func (d *Drand) Setup(c context.Context, in *dkg_proto.DKGPacket) (*dkg_proto.DKGResponse, error) {
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	d.state.Lock()
 	defer d.state.Unlock()
 	if d.dkgDone {
@@ -24,17 +43,30 @@ func (d *Drand) Setup(c context.Context, in *drand.SetupPacket) (*drand.Empty, e
 	if d.dkg == nil {
 		return nil, errors.New("drand: no dkg running")
 	}
+<<<<<<< HEAD
 	d.dkg.Process(c, in.Dkg)
 	return new(drand.Empty), nil
 }
 
 // Reshare is called when a resharing protocol is in progress
 func (d *Drand) Reshare(c context.Context, in *drand.ResharePacket) (*drand.Empty, error) {
+=======
+	d.dkg.Process(c, in)
+	return &dkg_proto.DKGResponse{}, nil
+}
+
+// Reshare is called when a resharing protocol is in progress
+func (d *Drand) Reshare(c context.Context, in *dkg_proto.ResharePacket) (*dkg_proto.ReshareResponse, error) {
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	d.state.Lock()
 	defer d.state.Unlock()
 
 	if d.nextGroupHash == "" {
+<<<<<<< HEAD
 		return nil, fmt.Errorf("drand %s: can't reshare because InitReshare has not been called", d.priv.Public.Addr)
+=======
+		return nil, errors.New("drand: can't reshare because InitReshare has not been called")
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	}
 
 	// check that we are resharing to the new group that we expect
@@ -42,16 +74,25 @@ func (d *Drand) Reshare(c context.Context, in *drand.ResharePacket) (*drand.Empt
 		return nil, errors.New("drand: can't reshare to new group: incompatible hashes")
 	}
 
+<<<<<<< HEAD
 	if !d.nextFirstReceived && d.nextOldPresent {
 		d.nextFirstReceived = true
 		// go routine since StartDKG requires the global lock
 		go d.StartDKG()
+=======
+	if in.Packet == nil {
+		// indicator that we should start the DKG as we are one node in the old
+		// list that should reshare its share
+		go d.StartDKG()
+		return &dkg_proto.ReshareResponse{}, nil
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	}
 
 	if d.dkg == nil {
 		return nil, errors.New("drand: no dkg setup yet")
 	}
 
+<<<<<<< HEAD
 	d.nextFirstReceived = true
 	if in.Dkg != nil {
 		// first packet from the "leader" contains a nil packet for
@@ -60,6 +101,11 @@ func (d *Drand) Reshare(c context.Context, in *drand.ResharePacket) (*drand.Empt
 		d.dkg.Process(c, in.Dkg)
 	}
 	return new(drand.Empty), nil
+=======
+	// we just relay to the dkg
+	d.dkg.Process(c, in.Packet)
+	return &dkg_proto.ReshareResponse{}, nil
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 }
 
 // NewBeacon methods receives a beacon generation requests and answers
@@ -73,6 +119,7 @@ func (d *Drand) NewBeacon(c context.Context, in *drand.BeaconRequest) (*drand.Be
 	return d.beacon.ProcessBeacon(c, in)
 }
 
+<<<<<<< HEAD
 // PublicRand returns a public random beacon according to the request. If the Round
 // field is 0, then it returns the last one generated.
 func (d *Drand) PublicRand(c context.Context, in *drand.PublicRandRequest) (*drand.PublicRandResponse, error) {
@@ -81,6 +128,13 @@ func (d *Drand) PublicRand(c context.Context, in *drand.PublicRandRequest) (*dra
 	if d.beacon == nil {
 		return nil, errors.New("drand: beacon generation not started yet")
 	}
+=======
+// Public returns a public random beacon according to the request. If the Round
+// field is 0, then it returns the last one generated.
+func (d *Drand) Public(c context.Context, in *drand.PublicRandRequest) (*drand.PublicRandResponse, error) {
+	d.state.Lock()
+	defer d.state.Unlock()
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	var beacon *beacon.Beacon
 	var err error
 	if in.GetRound() == 0 {
@@ -91,6 +145,7 @@ func (d *Drand) PublicRand(c context.Context, in *drand.PublicRandRequest) (*dra
 	if err != nil {
 		return nil, fmt.Errorf("can't retrieve beacon: %s", err)
 	}
+<<<<<<< HEAD
 	peer, ok := peer.FromContext(c)
 	if ok {
 		d.log.With("module", "public").Info("public_rand", peer.Addr.String(), "round", beacon.Round)
@@ -117,6 +172,32 @@ func (d *Drand) PrivateRand(c context.Context, priv *drand.PrivateRandRequest) (
 	msg, err := ecies.Decrypt(key.G2, ecies.DefaultHash, d.priv.Key, priv.GetRequest())
 	if err != nil {
 		d.log.With("module", "public").Error("private", "invalid ECIES", "err", err.Error())
+=======
+	return &drand.PublicRandResponse{
+		Previous:   beacon.PreviousRand,
+		Round:      beacon.Round,
+		Randomness: beacon.Randomness,
+	}, nil
+}
+
+// Private returns an ECIES encrypted random blob of 32 bytes from /dev/urandom
+func (d *Drand) Private(c context.Context, priv *drand.PrivateRandRequest) (*drand.PrivateRandResponse, error) {
+	protoPoint := priv.GetRequest().GetEphemeral()
+	point, err := crypto.ProtoToKyberPoint(protoPoint)
+	if err != nil {
+		return nil, err
+	}
+	groupable, ok := point.(kyber.Groupable)
+	if !ok {
+		return nil, errors.New("point is not on a registered curve")
+	}
+	if groupable.Group().String() != key.G2.String() {
+		return nil, errors.New("point is not on the supported curve")
+	}
+	msg, err := ecies.Decrypt(key.G2, ecies.DefaultHash, d.priv.Key, priv.GetRequest())
+	if err != nil {
+		slog.Debugf("drand: received invalid ECIES private request: %s", err)
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		return nil, errors.New("invalid ECIES request")
 	}
 
@@ -124,16 +205,25 @@ func (d *Drand) PrivateRand(c context.Context, priv *drand.PrivateRandRequest) (
 	if err := clientKey.UnmarshalBinary(msg); err != nil {
 		return nil, errors.New("invalid client key")
 	}
+<<<<<<< HEAD
 	randomness, err := entropy.GetRandom(nil, 32)
 	if err != nil {
 		return nil, fmt.Errorf("error gathering randomness: %s", err)
 	} else if len(randomness) != 32 {
 		return nil, fmt.Errorf("error gathering randomness: expected 32 bytes, got %d", len(randomness))
+=======
+	var randomness [32]byte
+	if n, err := rand.Read(randomness[:]); err != nil {
+		return nil, errors.New("error gathering randomness")
+	} else if n != 32 {
+		return nil, errors.New("error gathering randomness")
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	}
 
 	obj, err := ecies.Encrypt(key.G2, ecies.DefaultHash, clientKey, randomness[:])
 	return &drand.PrivateRandResponse{Response: obj}, err
 }
+<<<<<<< HEAD
 
 // Home ...
 func (d *Drand) Home(c context.Context, in *drand.HomeRequest) (*drand.HomeResponse, error) {
@@ -175,3 +265,5 @@ func (d *Drand) Group(ctx context.Context, in *drand.GroupRequest) (*drand.Group
 	}
 	return resp, nil
 }
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128

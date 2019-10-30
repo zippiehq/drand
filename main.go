@@ -19,9 +19,12 @@ import (
 	"github.com/dedis/drand/core"
 	"github.com/dedis/drand/fs"
 	"github.com/dedis/drand/key"
+<<<<<<< HEAD
 	"github.com/dedis/drand/log"
 	"github.com/dedis/drand/net"
 	"github.com/dedis/drand/protobuf/drand"
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	"github.com/nikkolasg/slog"
 	"github.com/urfave/cli"
 )
@@ -39,8 +42,14 @@ const dpublic = "dist_key.public"
 const defaultPort = "8080"
 
 func banner() {
+<<<<<<< HEAD
 	fmt.Printf("drand %v (date %v, commit %v) by nikkolasg\n", version, buildDate, gitCommit)
 	s := "WARNING: this software has NOT received a full audit and must be used with caution and probably NOT in a production environment.\n"
+=======
+	fmt.Printf("drand vtest-%s by nikkolasg @ DEDIS\n", version)
+	s := "WARNING: this software has NOT received a full audit and must be \n" +
+		"used with caution and probably NOT in a production environment.\n"
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	fmt.Printf(s)
 }
 
@@ -55,8 +64,13 @@ var leaderFlag = cli.BoolFlag{
 }
 var verboseFlag = cli.IntFlag{
 	Name:  "verbose, V",
+<<<<<<< HEAD
 	Value: 1,
 	Usage: "Set verbosity to the given level. Level 1 is the info level and level 2 is the debug level. Verbosity is at the info level by default.",
+=======
+	Value: 0,
+	Usage: "Set verbosity to the given level. 0 for normal output, 1 for informational output and 2 for debug output.",
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 }
 
 var tlsCertFlag = cli.StringFlag{
@@ -128,6 +142,7 @@ var oldGroupFlag = cli.StringFlag{
 		"included in the current DKG.",
 }
 
+<<<<<<< HEAD
 var timeoutFlag = cli.StringFlag{
 	Name:  "timeout",
 	Usage: fmt.Sprintf("Timeout to use during the DKG, in string format. Default is %s", core.DefaultDKGTimeout),
@@ -145,6 +160,10 @@ func main() {
 		fmt.Printf("drand %v (date %v, commit %v) by nikkolasg\n", version, buildDate, gitCommit)
 	}
 
+=======
+func main() {
+	app := cli.NewApp()
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	app.Version = version
 	app.Usage = "distributed randomness service"
 	// =====Commands=====
@@ -153,8 +172,12 @@ func main() {
 			Name:  "start",
 			Usage: "Start the drand daemon.",
 			Flags: toArray(folderFlag, tlsCertFlag, tlsKeyFlag,
+<<<<<<< HEAD
 				insecureFlag, controlFlag, listenFlag,
 				certsDirFlag, pushFlag),
+=======
+				insecureFlag, controlFlag, listenFlag, certsDirFlag),
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 			Action: func(c *cli.Context) error {
 				banner()
 				return startCmd(c)
@@ -165,6 +188,7 @@ func main() {
 			Usage: "Stop the drand daemon.\n",
 			Action: func(c *cli.Context) error {
 				banner()
+<<<<<<< HEAD
 				return stopDaemon(c)
 			},
 		},
@@ -216,6 +240,50 @@ func main() {
 			Action: func(c *cli.Context) error {
 				banner()
 				return checkGroup(c)
+=======
+				return stopCmd(c)
+			},
+		},
+		cli.Command{
+			Name: "share",
+			Usage: "Launch a sharing protocol. If one group is given as " +
+				"argument, drand launches a DKG protocol to create a distributed " +
+				"keypair between all participants listed in the group. An " +
+				"existing group can also issue new shares to a new group: use " +
+				"the flag --from to specify the current group and give " +
+				"the new group as argument. Specify the --leader flag to make " +
+				"this daemon start the protocol\n",
+			ArgsUsage: "<group.toml> group file",
+			Flags: toArray(folderFlag, insecureFlag, controlFlag,
+				leaderFlag, oldGroupFlag),
+			Action: func(c *cli.Context) error {
+				banner()
+				return shareCmd(c)
+			},
+		},
+		cli.Command{
+			Name: "generate-keypair",
+			Usage: "Generate the longterm keypair (drand.private, drand.public)" +
+				"for this node.\n",
+			ArgsUsage: "<address> is the public address for other nodes to contact",
+			Flags:     toArray(insecureFlag),
+			Action: func(c *cli.Context) error {
+				banner()
+				return keygenCmd(c)
+			},
+		},
+		cli.Command{
+			Name: "group",
+			Usage: "Merge the given list of whitespace-separated drand.public " +
+				"keys into the group.toml file if one is provided, if not, create " +
+				"a new group.toml file with the given identites.\n",
+			ArgsUsage: "<key1 key2 key3...> must be the identities of the group " +
+				"to create/to insert into the group",
+			Flags: toArray(groupFlag, outFlag, periodFlag),
+			Action: func(c *cli.Context) error {
+				banner()
+				return groupCmd(c)
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 			},
 		},
 		{
@@ -250,7 +318,11 @@ func main() {
 						"it prints a warning.\n",
 					Flags: toArray(tlsCertFlag, insecureFlag, roundFlag, nodeFlag),
 					Action: func(c *cli.Context) error {
+<<<<<<< HEAD
 						return getPublicRandomness(c)
+=======
+						return getPublicCmd(c)
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 					},
 				},
 				{
@@ -274,6 +346,7 @@ func main() {
 				return pingpongCmd(c)
 			},
 		},
+<<<<<<< HEAD
 		{
 			Name:  "reset",
 			Usage: "Resets the local distributed information (share, group file and random beacons).",
@@ -282,6 +355,9 @@ func main() {
 				return resetCmd(c)
 			},
 		},
+=======
+
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		{
 			Name: "show",
 			Usage: "local information retrieval about the node's cryptographic " +
@@ -296,6 +372,7 @@ func main() {
 					Name:  "share",
 					Usage: "shows the private share\n",
 					Flags: toArray(controlFlag),
+<<<<<<< HEAD
 					Action: func(c *cli.Context) error {
 						return showShareCmd(c)
 					},
@@ -315,6 +392,27 @@ func main() {
 					Usage: "shows the collective key generated during DKG.\n",
 					Flags: toArray(controlFlag),
 					Action: func(c *cli.Context) error {
+=======
+					Action: func(c *cli.Context) error {
+						return showShareCmd(c)
+					},
+				},
+				{
+					Name: "group",
+					Usage: "shows the current group.toml used. The group.toml " +
+						"may contain the distributed public key if the DKG has been " +
+						"ran already.\n",
+					Flags: toArray(outFlag, controlFlag),
+					Action: func(c *cli.Context) error {
+						return showGroupCmd(c)
+					},
+				},
+				{
+					Name:  "cokey",
+					Usage: "shows the collective key generated during DKG.\n",
+					Flags: toArray(controlFlag),
+					Action: func(c *cli.Context) error {
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 						return showCokeyCmd(c)
 					},
 				},
@@ -339,7 +437,21 @@ func main() {
 	}
 	app.Flags = toArray(verboseFlag, folderFlag)
 	app.Before = func(c *cli.Context) error {
+<<<<<<< HEAD
 
+=======
+		if c.GlobalIsSet("verbose") {
+			if c.Int("verbose") == 0 {
+				slog.Level = slog.LevelPrint
+			}
+			if c.Int("verbose") == 1 {
+				slog.Level = slog.LevelInfo
+			}
+			if c.Int("verbose") == 2 {
+				slog.Level = slog.LevelDebug
+			}
+		}
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		testWindows(c)
 		return nil
 	}
@@ -348,6 +460,7 @@ func main() {
 	}
 }
 
+<<<<<<< HEAD
 func resetCmd(c *cli.Context) error {
 	conf := contextToConfig(c)
 	fmt.Printf("You are about to delete your local share, group file and generated random beacons. Are you sure you wish to perform this operation? [y/N]")
@@ -376,6 +489,12 @@ func resetCmd(c *cli.Context) error {
 
 func resetBeaconDB(config *core.Config) bool {
 	if _, err := os.Stat(config.DBFolder()); err == nil {
+=======
+func resetBeaconDB(config *core.Config) bool {
+	if _, err := os.Stat(config.DBFolder()); err == nil {
+		// using fmt so does not get the new line at the end.
+		// XXX allow slog for that behavior
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		fmt.Printf("INCONSISTENT STATE: A beacon database exists already.\n"+
 			"drand support only one identity at the time and thus needs to delete "+
 			"the existing beacon database.\nCurrent folder is %s.\nAccept to delete "+
@@ -420,6 +539,7 @@ func askPort() string {
 func testWindows(c *cli.Context) {
 	//x509 not available on windows: must run without TLS
 	if runtime.GOOS == "windows" && !c.Bool("tls-disable") {
+<<<<<<< HEAD
 		fatal("TLS is not available on Windows, please disable TLS")
 	}
 }
@@ -427,12 +547,32 @@ func testWindows(c *cli.Context) {
 func fatal(str string, args ...interface{}) {
 	fmt.Printf(str+"\n", args)
 	os.Exit(1)
+=======
+		slog.Fatal("TLS is not available on Windows, please disable TLS")
+	}
+}
+
+func stopCmd(c *cli.Context) error {
+	conf := contextToConfig(c)
+	fs := key.NewFileStore(conf.ConfigFolder())
+	var drand *core.Drand
+	drand, err := core.LoadDrand(fs, conf)
+	if err != nil {
+		slog.Fatal(err)
+	}
+	drand.Stop()
+	return nil
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 }
 
 func keygenCmd(c *cli.Context) error {
 	args := c.Args()
 	if !args.Present() {
+<<<<<<< HEAD
 		fatal("Missing drand address in argument")
+=======
+		slog.Fatal("Missing drand address in argument")
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	}
 	addr := args.First()
 	var validID = regexp.MustCompile(`[:][0-9]+$`)
@@ -442,7 +582,11 @@ func keygenCmd(c *cli.Context) error {
 	}
 	var priv *key.Pair
 	if c.Bool("tls-disable") {
+<<<<<<< HEAD
 		fmt.Println("Generating private / public key pair without TLS.")
+=======
+		slog.Info("Generating private / public key pair without TLS.")
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		priv = key.NewKeyPair(addr)
 	} else {
 		fmt.Println("Generating private / public key pair with TLS indication")
@@ -479,13 +623,21 @@ func keygenCmd(c *cli.Context) error {
 
 func groupCmd(c *cli.Context) error {
 	if !c.Args().Present() || (c.NArg() < 3 && !c.IsSet("group")) {
+<<<<<<< HEAD
 		fatal("drand: group command take at least 3 keys as arguments")
+=======
+		slog.Fatal("drand: group command take at least 3 keys as arguments")
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	}
 	var threshold = key.DefaultThreshold(c.NArg())
 	publics := make([]*key.Identity, c.NArg())
 	for i, str := range c.Args() {
 		pub := &key.Identity{}
+<<<<<<< HEAD
 		fmt.Printf("drand: reading public identity from %s\n", str)
+=======
+		slog.Infof("drand: reading public identity from %s", str)
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		if err := key.Load(str, pub); err != nil {
 			fatal("drand: can't load key %d: %v", i, err)
 		}
@@ -497,7 +649,11 @@ func groupCmd(c *cli.Context) error {
 	if c.IsSet(periodFlag.Name) {
 		period, err = time.ParseDuration(c.String(periodFlag.Name))
 		if err != nil {
+<<<<<<< HEAD
 			fatal("drand: invalid period time given %s", err)
+=======
+			slog.Fatalf("drand: invalid period time given %s", err)
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		}
 	}
 
@@ -505,10 +661,16 @@ func groupCmd(c *cli.Context) error {
 	if c.IsSet("group") {
 		// merge with given group
 		groupPath := c.String("group")
+<<<<<<< HEAD
 		testEmptyGroup(groupPath)
 		oldG := &key.Group{}
 		if err := key.Load(groupPath, oldG); err != nil {
 			fatal("drand: can't load group: %v", err)
+=======
+		oldG := &key.Group{}
+		if err := key.Load(groupPath, oldG); err != nil {
+			slog.Fatal(err)
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		}
 		group = oldG.MergeGroup(publics)
 	} else {
@@ -519,21 +681,35 @@ func groupCmd(c *cli.Context) error {
 	if c.IsSet("out") {
 		groupPath := c.String("out")
 		if err := key.Save(groupPath, group, false); err != nil {
+<<<<<<< HEAD
 			fatal("drand: can't save group: %v", err)
+=======
+			slog.Fatal(err)
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		}
 	} else {
 		var buff bytes.Buffer
 		if err := toml.NewEncoder(&buff).Encode(group.TOML()); err != nil {
+<<<<<<< HEAD
 			fatal("drand: can't encode group to TOML: %v", err)
 		}
 		buff.WriteString("\n")
 		fmt.Printf("Copy the following snippet into a new group.toml file " +
 			"and distribute it to all the participants:\n")
 		fmt.Printf(buff.String())
+=======
+			slog.Print("doesn't want to encode")
+		}
+		buff.WriteString("\n")
+		slog.Printf("Copy the following snippet into a new group.toml file " +
+			"and distribute it to all the participants:\n")
+		slog.Printf(buff.String())
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	}
 	return nil
 }
 
+<<<<<<< HEAD
 func checkGroup(c *cli.Context) error {
 	if !c.Args().Present() {
 		fatal("drand: check-group expects a group argument")
@@ -556,18 +732,27 @@ func checkGroup(c *cli.Context) error {
 	return nil
 }
 
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 func toArray(flags ...cli.Flag) []cli.Flag {
 	return flags
 }
 
 func getGroup(c *cli.Context) *key.Group {
 	g := &key.Group{}
+<<<<<<< HEAD
 	groupPath := c.Args().First()
 	testEmptyGroup(groupPath)
 	if err := key.Load(groupPath, g); err != nil {
 		fatal("drand: error loading group file: %s", err)
 	}
 	fmt.Printf("group file loaded with %d participants", g.Len())
+=======
+	if err := key.Load(c.Args().First(), g); err != nil {
+		slog.Fatalf("drand: error loading group argument: %s", err)
+	}
+	slog.Infof("group file loaded with %d participants", g.Len())
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	return g
 }
 
@@ -579,7 +764,11 @@ func keyIDFromAddr(addr string, group *key.Group) *key.Identity {
 			return id
 		}
 	}
+<<<<<<< HEAD
 	fatal("Could not retrive the node you are trying to contact in the group file.")
+=======
+	slog.Fatal("Could not retrive the node you are trying to contact in the group file.")
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	return nil
 }
 
@@ -645,13 +834,18 @@ func getNodes(c *cli.Context) []*key.Identity {
 			}
 		}
 		if len(ids) == 0 {
+<<<<<<< HEAD
 			fatal("drand: addresses specified don't exist in group.toml")
+=======
+			slog.Fatalf("drand: addresses specified don't exist in group.toml")
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		}
 	} else {
 		// select them all in order
 		ids = gids
 	}
 	if len(ids) == 0 {
+<<<<<<< HEAD
 		fatal("drand: no nodes specified with --nodes are in the group file")
 	}
 	return ids
@@ -669,5 +863,9 @@ func testEmptyGroup(path string) {
 	}
 	if fi.Size() == 0 {
 		fatal("drand: group file empty")
+=======
+		slog.Fatalf("drand: no nodes specified with --nodes are in the group file")
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	}
+	return ids
 }

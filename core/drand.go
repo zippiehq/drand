@@ -12,8 +12,13 @@ import (
 	"github.com/dedis/drand/key"
 	"github.com/dedis/drand/log"
 	"github.com/dedis/drand/net"
+<<<<<<< HEAD
 	dkg_proto "github.com/dedis/drand/protobuf/crypto/dkg"
 	"github.com/dedis/drand/protobuf/drand"
+=======
+	dkg_proto "github.com/dedis/drand/protobuf/dkg"
+	"github.com/nikkolasg/slog"
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 )
 
 // Drand is the main logic of the program. It reads the keys / group file, it
@@ -41,6 +46,7 @@ type Drand struct {
 	dkgDone bool
 
 	// proposed next group hash for a resharing operation
+<<<<<<< HEAD
 	nextGroupHash     string
 	nextGroup         *key.Group
 	nextConf          *dkg.Config
@@ -49,6 +55,11 @@ type Drand struct {
 
 	// general logger
 	log log.Logger
+=======
+	nextGroupHash string
+	nextGroup     *key.Group
+	nextConf      *dkg.Config
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 
 	// global state lock
 	state sync.Mutex
@@ -145,13 +156,24 @@ func (d *Drand) WaitDKG() error {
 	errCh := d.dkg.WaitError()
 	d.state.Unlock()
 
+<<<<<<< HEAD
 	d.log.Debug("dkg_start", time.Now().String())
+=======
+	var err error
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	select {
 	case share := <-waitCh:
 		s := key.Share(share)
 		d.share = &s
+<<<<<<< HEAD
 	case err := <-errCh:
 		return fmt.Errorf("drand: error from dkg: %v", err)
+=======
+	case err = <-errCh:
+	}
+	if err != nil {
+		return err
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	}
 
 	d.state.Lock()
@@ -159,11 +181,17 @@ func (d *Drand) WaitDKG() error {
 
 	d.store.SaveShare(d.share)
 	d.store.SaveDistPublic(d.share.Public())
+<<<<<<< HEAD
 	d.group = d.dkg.QualifiedGroup()
 	// need to save the period before since dkg returns a *new* fresh group, it
 	// does not know about the period.
 	d.group.Period = d.nextConf.NewNodes.Period
 	d.log.Debug("dkg_end", time.Now(), "certified", d.group.Len())
+=======
+	// XXX change to qualified group when handling failure during DKG time
+	d.group = d.nextConf.NewNodes
+	d.group.PublicKey = d.share.Public()
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	d.store.SaveGroup(d.group)
 	d.dkgDone = true
 	d.dkg = nil
@@ -180,11 +208,19 @@ func (d *Drand) createDKG() error {
 		return nil
 	}
 	if d.nextConf == nil {
+<<<<<<< HEAD
 		return errors.New("drand: invalid state: no next configuration")
 	}
 	var err error
 	c := d.nextConf
 	if d.dkg, err = dkg.NewHandler(d.dkgNetwork(c), c, d.log); err != nil {
+=======
+		return errors.New("drand: invalid state -> nil nextConf")
+	}
+	var err error
+	c := d.nextConf
+	if d.dkg, err = dkg.NewHandler(d.dkgNetwork(c), c); err != nil {
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		return err
 	}
 	return nil
@@ -196,6 +232,7 @@ var DefaultSeed = []byte("Truth is like the sun. You can shut it out for a time,
 
 // StartBeacon initializes the beacon if needed and launch a go routine that
 // runs the generation loop.
+<<<<<<< HEAD
 func (d *Drand) StartBeacon(catchup bool) error {
 	d.state.Lock()
 	defer d.state.Unlock()
@@ -207,6 +244,13 @@ func (d *Drand) StartBeacon(catchup bool) error {
 	period := getPeriod(d.group)
 	d.log.Info("beacon_start", time.Now(), "catchup", catchup)
 	go d.beacon.Run(period, catchup)
+=======
+func (d *Drand) StartBeacon() error {
+	if err := d.initBeacon(); err != nil {
+		return err
+	}
+	go d.BeaconLoop()
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	return nil
 }
 
@@ -219,6 +263,44 @@ func (d *Drand) StopBeacon() {
 	}
 	d.beacon.Stop()
 	d.beacon = nil
+<<<<<<< HEAD
+=======
+}
+
+// BeaconLoop starts periodically the TBLS protocol. The seed is the first
+// message signed alongside with the current timestamp. All subsequent
+// signatures are chained:
+// s_i+1 = SIG(s_i || timestamp)
+// For the moment, each resulting signature is stored in a file named
+// beacons/<timestamp>.sig.
+// The period is determined according the group.toml this node belongs to.
+func (d *Drand) BeaconLoop() error {
+	d.state.Lock()
+	// heuristic: we catchup when we can retrieve a beacon from the db
+	// if there is an error we quit, if there is no beacon saved yet, we
+	// run the loop as usual.
+	var catchup = true
+	b, err := d.beaconStore.Last()
+	if err != nil {
+		if err == beacon.ErrNoBeaconSaved {
+			// we are starting the beacon generation
+			catchup = false
+		} else {
+			// there's a serious error
+			d.state.Unlock()
+			return fmt.Errorf("drand: could not determine beacon state: %s", err)
+		}
+	}
+	if catchup {
+		slog.Infof("drand: starting beacon loop in catch-up mode from round %v", b.Round)
+	} else {
+		slog.Infof("drand: starting beacon loop")
+	}
+	period := getPeriod(d.group)
+	d.state.Unlock()
+	d.beacon.Loop(DefaultSeed, period, catchup)
+	return nil
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 }
 
 // Stop simply stops all drand operations.
@@ -226,7 +308,10 @@ func (d *Drand) Stop() {
 	d.StopBeacon()
 	d.state.Lock()
 	d.gateway.StopAll()
+<<<<<<< HEAD
 	d.control.Stop()
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	d.state.Unlock()
 }
 
@@ -244,6 +329,10 @@ func (d *Drand) initBeacon() error {
 	if d.beacon != nil {
 		return nil
 	}
+<<<<<<< HEAD
+=======
+	d.dkgDone = true
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	fs.CreateSecureFolder(d.opts.DBFolder())
 	store, err := beacon.NewBoltStore(d.opts.dbFolder, d.opts.boltOpts)
 	if err != nil {
@@ -267,6 +356,7 @@ func (d *Drand) sendDkgPacket(p net.Peer, pack *dkg_proto.Packet) error {
 	return err
 }
 
+<<<<<<< HEAD
 func (d *Drand) sendResharePacket(p net.Peer, pack *dkg_proto.Packet) error {
 	// no concurrency to get nextHash since this is only used within a locked drand
 	reshare := &drand.ResharePacket{
@@ -275,6 +365,25 @@ func (d *Drand) sendResharePacket(p net.Peer, pack *dkg_proto.Packet) error {
 	}
 	_, err := d.gateway.ProtocolClient.Reshare(p, reshare)
 	return err
+=======
+func (d *Drand) sendResharePacket(p net.Peer, pack *dkg_proto.DKGPacket) error {
+	// no concurrency to get nextHash since this is only used within a locked drand
+	reshare := &dkg_proto.ResharePacket{
+		Packet:    pack,
+		GroupHash: d.nextGroupHash,
+	}
+	_, err := d.gateway.InternalClient.Reshare(p, reshare)
+	return err
+}
+
+func (d *Drand) dkgNetwork(conf *dkg.Config) *dkgNetwork {
+	// simple test to check if we are in a resharing mode or in a fresh dkg mode
+	// that will lead to two different outer protobuf structures
+	if conf.OldNodes == nil {
+		return &dkgNetwork{d.sendDkgPacket}
+	}
+	return &dkgNetwork{d.sendResharePacket}
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 }
 
 func (d *Drand) dkgNetwork(conf *dkg.Config) *dkgNetwork {
@@ -289,7 +398,10 @@ func (d *Drand) dkgNetwork(conf *dkg.Config) *dkgNetwork {
 type dkgNetwork struct {
 	send func(net.Peer, *dkg_proto.Packet) error
 }
+<<<<<<< HEAD
 
 func (d *dkgNetwork) Send(p net.Peer, pack *dkg_proto.Packet) error {
 	return d.send(p, pack)
 }
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128

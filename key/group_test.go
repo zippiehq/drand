@@ -6,9 +6,15 @@ import (
 	"testing"
 	"time"
 
+<<<<<<< HEAD
 	"github.com/stretchr/testify/require"
 	kyber "go.dedis.ch/kyber/v3"
 	"go.dedis.ch/kyber/v3/util/random"
+=======
+	kyber "github.com/dedis/kyber"
+	"github.com/dedis/kyber/util/random"
+	"github.com/stretchr/testify/require"
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 )
 
 func TestGroupSaveLoad(t *testing.T) {
@@ -41,8 +47,14 @@ func TestGroupSaveLoad(t *testing.T) {
 	loaded := &Group{}
 	require.NoError(t, Load(groupPath, loaded))
 
+<<<<<<< HEAD
 	require.Equal(t, len(loaded.Nodes), len(group.Nodes))
 	require.Equal(t, loaded.Threshold, group.Threshold)
 	require.True(t, loaded.PublicKey.Equal(group.PublicKey))
+=======
+	require.Equal(t, loaded.Nodes, group.Nodes)
+	require.Equal(t, loaded.Threshold, group.Threshold)
+	require.Equal(t, loaded.PublicKey, group.PublicKey)
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	require.Equal(t, loaded.Period, group.Period)
 }

@@ -1,12 +1,19 @@
 package main
 
 import (
+<<<<<<< HEAD
 	"fmt"
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	"os"
 	"runtime"
 
 	"github.com/dedis/drand/core"
 	"github.com/dedis/drand/key"
+<<<<<<< HEAD
+=======
+	"github.com/nikkolasg/slog"
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	"github.com/urfave/cli"
 )
 
@@ -26,6 +33,7 @@ func startCmd(c *cli.Context) error {
 		if exit := resetBeaconDB(conf); exit {
 			os.Exit(0)
 		}
+<<<<<<< HEAD
 		fmt.Println("drand: will run as fresh install -> expect to run DKG.")
 		drand, err = core.NewDrand(fs, conf)
 		if err != nil {
@@ -41,6 +49,21 @@ func startCmd(c *cli.Context) error {
 		// nobody started.
 		if err := drand.StartBeacon(!c.Bool(pushFlag.Name)); err != nil {
 			fatal("drand: starting beacon failed: %s", err)
+=======
+		slog.Infof("drand: will run as fresh install -> expect to run DKG.")
+		drand, err = core.NewDrand(fs, conf)
+		if err != nil {
+			slog.Fatalf("drand: can't instantiate drand instance %s", err)
+		}
+	} else {
+		slog.Infof("drand: will already start running randomness beacon")
+		drand, err = core.LoadDrand(fs, conf)
+		if err != nil {
+			slog.Fatalf("drand: can't load drand instance %s", err)
+		}
+		if err := drand.StartBeacon(); err != nil {
+			slog.Fatalf("drand: starting beacon failed: %s", err)
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		}
 	}
 	// wait indefinitely  - XXX analyzes goroutine graphs to see if it actually
@@ -51,6 +74,10 @@ func startCmd(c *cli.Context) error {
 }
 
 func stopDaemon(c *cli.Context) error {
+<<<<<<< HEAD
 	// TODO
+=======
+	// XXX TODO
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	panic("not implemented yet")
 }

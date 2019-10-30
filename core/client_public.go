@@ -63,7 +63,11 @@ func (c *Client) LastPublic(addr string, pub *key.DistPublic, secure bool) (*dra
 // returns it if the randomness is valid. Secure indicates that the request
 // must be made over a TLS protected channel.
 func (c *Client) Public(addr string, pub *key.DistPublic, secure bool, round int) (*drand.PublicRandResponse, error) {
+<<<<<<< HEAD:core/client_public.go
 	resp, err := c.client.PublicRand(&peerAddr{addr, secure}, &drand.PublicRandRequest{Round: uint64(round)})
+=======
+	resp, err := c.client.Public(&peerAddr{addr, secure}, &drand.PublicRandRequest{Round: uint64(round)})
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128:core/client.go
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +97,11 @@ func (c *Client) Private(id *key.Identity) ([]byte, error) {
 }
 
 // DistKey returns the distributed key the node at this address is holding.
+<<<<<<< HEAD:core/client_public.go
 func (c *Client) DistKey(addr string, secure bool) (*drand.DistKeyResponse, error) {
+=======
+func (c *Client) DistKey(addr string, secure bool) (kyber.Point, error) {
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128:core/client.go
 	resp, err := c.client.DistKey(&peerAddr{addr, secure}, &drand.DistKeyRequest{})
 	return resp, err
 }

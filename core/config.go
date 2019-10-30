@@ -7,12 +7,41 @@ import (
 	bolt "github.com/coreos/bbolt"
 	"github.com/dedis/drand/beacon"
 	"github.com/dedis/drand/dkg"
+<<<<<<< HEAD
 	"github.com/dedis/drand/key"
 	"github.com/dedis/drand/log"
+=======
+	"github.com/dedis/drand/fs"
+	"github.com/dedis/drand/key"
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	"github.com/dedis/drand/net"
 	"google.golang.org/grpc"
 )
 
+<<<<<<< HEAD
+=======
+// DefaultConfigFolderName is the name of the folder containing all key materials
+// (and the beacons db file by default). It is relative to the user's home
+// directory.
+const DefaultConfigFolderName = ".drand"
+
+// DefaultConfigFolder returns the default path of the configuration folder.
+func DefaultConfigFolder() string {
+	return path.Join(fs.HomeFolder(), DefaultConfigFolderName)
+}
+
+// DefaultDbFolder is the name of the folder in which the db file is saved. By
+// default it is relative to the DefaultConfigFolder path.
+const DefaultDbFolder = "db"
+
+// DefaultBeaconPeriod is the period in which the beacon logic creates new
+// random beacon.
+const DefaultBeaconPeriod time.Duration = 1 * time.Minute
+
+// DefaultControlPort is the default port the functionnality control port communicate on.
+const DefaultControlPort = "8888"
+
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 // ConfigOption is a function that applies a specific setting to a Config.
 type ConfigOption func(*Config)
 
@@ -40,6 +69,7 @@ func NewConfig(opts ...ConfigOption) *Config {
 	d := &Config{
 		configFolder: DefaultConfigFolder(),
 		//grpcOpts:     []grpc.DialOption{grpc.WithInsecure()},
+<<<<<<< HEAD
 		grpcOpts: []grpc.DialOption{
 			/*grpc.WithBackoffMaxDelay(3 * time.Second),*/
 			//grpc.WithBlock(),
@@ -50,6 +80,11 @@ func NewConfig(opts ...ConfigOption) *Config {
 		certmanager: net.NewCertManager(),
 		controlPort: DefaultControlPort,
 		logger:      log.DefaultLogger,
+=======
+		dkgTimeout:  dkg.DefaultTimeout,
+		certmanager: net.NewCertManager(),
+		controlPort: DefaultControlPort,
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	}
 	d.dbFolder = path.Join(d.configFolder, DefaultDbFolder)
 	for i := range opts {
@@ -199,6 +234,7 @@ func WithControlPort(port string) ConfigOption {
 	}
 }
 
+<<<<<<< HEAD
 // WithLogLevel sets the logging verbosity to the given level.
 func WithLogLevel(level int) ConfigOption {
 	return func(d *Config) {
@@ -206,6 +242,8 @@ func WithLogLevel(level int) ConfigOption {
 	}
 }
 
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 func getPeriod(g *key.Group) time.Duration {
 	if g.Period == time.Duration(0) {
 		return DefaultBeaconPeriod

@@ -32,9 +32,15 @@ func (t *testDKGServer) Reshare(c context.Context, in *drand.ResharePacket) (*dr
 	return &drand.Empty{}, nil
 }
 
+func (t *testDKGServer) Reshare(c context.Context, in *dkg.ResharePacket) (*dkg.ReshareResponse, error) {
+	t.h.Process(c, in.Packet)
+	return &dkg.ReshareResponse{}, nil
+}
+
 // testNet implements the network interface that the dkg Handler expects
 type testNet struct {
 	fresh bool
+<<<<<<< HEAD
 	net.ProtocolClient
 }
 
@@ -44,6 +50,17 @@ func (t *testNet) Send(p net.Peer, d *dkg.Packet) error {
 		_, err = t.ProtocolClient.Setup(p, &drand.SetupPacket{Dkg: d})
 	} else {
 		_, err = t.ProtocolClient.Reshare(p, &drand.ResharePacket{Dkg: d})
+=======
+	net.InternalClient
+}
+
+func (t *testNet) Send(p net.Peer, d *dkg.DKGPacket) error {
+	var err error
+	if t.fresh {
+		_, err = t.InternalClient.Setup(p, d)
+	} else {
+		_, err = t.InternalClient.Reshare(p, &dkg.ResharePacket{Packet: d})
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	}
 	return err
 }
@@ -51,12 +68,17 @@ func (t *testNet) Send(p net.Peer, d *dkg.Packet) error {
 func testNets(n int, fresh bool) []*testNet {
 	nets := make([]*testNet, n, n)
 	for i := 0; i < n; i++ {
+<<<<<<< HEAD
 		nets[i] = &testNet{fresh: fresh, ProtocolClient: net.NewGrpcClient()}
 		nets[i].SetTimeout(5 * time.Second)
+=======
+		nets[i] = &testNet{fresh: fresh, InternalClient: net.NewGrpcClient()}
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	}
 	return nets
 }
 
+<<<<<<< HEAD
 func TestDKGWithTimeout(t *testing.T) {
 	slog.Level = slog.LevelDebug
 	n := 7
@@ -139,6 +161,10 @@ func TestDKGWithTimeout(t *testing.T) {
 }
 
 func TestDKGFresh(t *testing.T) {
+=======
+func TestDKGFresh(t *testing.T) {
+	slog.Level = slog.LevelDebug
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	n := 5
 	slog.Level = slog.LevelDebug
 	thr := key.DefaultThreshold(n)
@@ -152,12 +178,22 @@ func TestDKGFresh(t *testing.T) {
 	group := key.NewGroup(pubs, thr)
 	for i := 0; i < n; i++ {
 		conf := &Config{
+<<<<<<< HEAD
 			Suite:    key.G2.(Suite),
 			Key:      privs[i],
 			NewNodes: group,
 		}
 
 		handlers[i], err = NewHandler(nets[i], conf, log.DefaultLogger)
+=======
+			Suite:     key.G2.(Suite),
+			Key:       privs[i],
+			NewNodes:  group,
+			Threshold: thr,
+		}
+
+		handlers[i], err = NewHandler(nets[i], conf)
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		require.NoError(t, err)
 		dkgServer := testDKGServer{h: handlers[i]}
 		listeners[i] = net.NewTCPGrpcListener(privs[i].Public.Addr, &dkgServer)
@@ -198,6 +234,7 @@ func TestDKGFresh(t *testing.T) {
 	}
 }
 
+<<<<<<< HEAD
 func TestDKGResharingPartialWithTimeout(t *testing.T) {
 	slog.Level = slog.LevelDebug
 	oldN := 7
@@ -343,6 +380,8 @@ func TestDKGResharingPartialWithTimeout(t *testing.T) {
 	}
 }
 
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 func TestDKGResharingPartial(t *testing.T) {
 	slog.Level = slog.LevelDebug
 	oldN := 5
@@ -350,7 +389,11 @@ func TestDKGResharingPartial(t *testing.T) {
 	oldPrivs := test.GenerateIDs(oldN)
 	oldPubs := test.ListFromPrivates(oldPrivs)
 	oldShares, dpub := test.SimulateDKG(t, key.G2, oldN, oldT)
+<<<<<<< HEAD
 	oldGroup := key.LoadGroup(oldPubs, &key.DistPublic{Coefficients: dpub}, oldT)
+=======
+	oldGroup := key.LoadGroup(oldPubs, &key.DistPublic{dpub}, oldT)
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 
 	newN := oldN + 1
 	newT := oldT + 1
@@ -387,6 +430,7 @@ func TestDKGResharingPartial(t *testing.T) {
 			Commits: dpub,
 		}
 		conf := &Config{
+<<<<<<< HEAD
 			Suite:    key.G2.(Suite),
 			Key:      oldPrivs[i],
 			OldNodes: oldGroup,
@@ -398,24 +442,56 @@ func TestDKGResharingPartial(t *testing.T) {
 
 		dkgServer := testDKGServer{h: handlers[i]}
 		listeners[i] = net.NewTCPGrpcListener(oldPrivs[i].Public.Addr, &dkgServer)
+=======
+			Suite:     key.G2.(Suite),
+			Key:       oldPrivs[i],
+			OldNodes:  oldGroup,
+			NewNodes:  newGroup,
+			Share:     &share,
+			Threshold: newT,
+		}
+		handlers[i], err = NewHandler(nets[i], conf)
+		require.NoError(t, err)
+
+		dkgServer := testDKGServer{h: handlers[i]}
+		listeners[i] = net.NewTCPGrpcListener(oldPrivs[i].Public.Addr, &net.DefaultService{D: &dkgServer})
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		go listeners[i].Start()
 	}
 	// new nodes
 	for i := oldN; i < total; i++ {
 		newIdx := i - oldN + newOffset
+<<<<<<< HEAD
+=======
+		dkgConf := sdkg.NewReshareConfig(key.G2.(sdkg.Suite),
+			newPrivs[newIdx].Key,
+			oldGroup.Points(),
+			newGroup.Points(),
+			nil,
+			dpub)
+		dkgConf.Threshold = newT
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		conf := &Config{
 			Suite:    key.G2.(Suite),
 			Key:      newPrivs[newIdx],
 			NewNodes: newGroup,
 			OldNodes: oldGroup,
 		}
+<<<<<<< HEAD
 		handlers[i], err = NewHandler(nets[i], conf, log.DefaultLogger)
+=======
+		handlers[i], err = NewHandler(nets[i], conf)
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		require.NoError(t, err)
 		require.True(t, handlers[i].newNode)
 		require.False(t, handlers[i].oldNode)
 		require.Equal(t, handlers[i].nidx, newIdx)
 		dkgServer := testDKGServer{h: handlers[i]}
+<<<<<<< HEAD
 		listeners[i] = net.NewTCPGrpcListener(newPrivs[newIdx].Public.Addr, &dkgServer)
+=======
+		listeners[i] = net.NewTCPGrpcListener(newPrivs[newIdx].Public.Addr, &net.DefaultService{D: &dkgServer})
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		go listeners[i].Start()
 
 	}
@@ -427,7 +503,10 @@ func TestDKGResharingPartial(t *testing.T) {
 	}()
 
 	finished := make(chan int, total)
+<<<<<<< HEAD
 	quitAll := make(chan bool)
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	goDkg := func(idx int) {
 		if idx < oldN {
 			go handlers[idx].Start()
@@ -442,9 +521,14 @@ func TestDKGResharingPartial(t *testing.T) {
 			finished <- idx
 		case err := <-errCh:
 			require.NoError(t, err)
+<<<<<<< HEAD
 		case <-quitAll:
 			return
 		case <-time.After(3 * time.Second):
+=======
+		case <-time.After(3 * time.Second):
+			fmt.Println("timeout")
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 			t.Fatal("not finished in time")
 		}
 	}
@@ -470,7 +554,10 @@ func TestDKGResharingPartial(t *testing.T) {
 		//}
 		/*}*/
 	}
+<<<<<<< HEAD
 	close(quitAll)
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 }
 
 func TestDKGResharingNewNode(t *testing.T) {
@@ -481,7 +568,11 @@ func TestDKGResharingNewNode(t *testing.T) {
 	oldPubs := test.ListFromPrivates(oldPrivs)
 
 	oldShares, dpub := test.SimulateDKG(t, key.G2, oldN, oldT)
+<<<<<<< HEAD
 	oldGroup := key.LoadGroup(oldPubs, &key.DistPublic{Coefficients: dpub}, oldT)
+=======
+	oldGroup := key.LoadGroup(oldPubs, &key.DistPublic{dpub}, oldT)
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 
 	newN := oldN + 1
 	newT := oldT + 1
@@ -502,6 +593,7 @@ func TestDKGResharingNewNode(t *testing.T) {
 	for i := 0; i < oldN; i++ {
 		share := key.Share{Commits: dpub, Share: oldShares[i]}
 		conf := &Config{
+<<<<<<< HEAD
 			Suite:    key.G2.(Suite),
 			Key:      oldPrivs[i],
 			OldNodes: oldGroup,
@@ -513,12 +605,27 @@ func TestDKGResharingNewNode(t *testing.T) {
 
 		dkgServer := testDKGServer{h: handlers[i]}
 		listeners[i] = net.NewTCPGrpcListener(oldPrivs[i].Public.Addr, &dkgServer)
+=======
+			Suite:     key.G2.(Suite),
+			Key:       oldPrivs[i],
+			OldNodes:  oldGroup,
+			NewNodes:  newGroup,
+			Share:     &share,
+			Threshold: newT,
+		}
+		handlers[i], err = NewHandler(nets[i], conf)
+		require.NoError(t, err)
+
+		dkgServer := testDKGServer{h: handlers[i]}
+		listeners[i] = net.NewTCPGrpcListener(oldPrivs[i].Public.Addr, &net.DefaultService{D: &dkgServer})
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		go listeners[i].Start()
 	}
 	// new nodes
 	for i := oldN; i < total; i++ {
 		newIdx := i - oldN
 		conf := &Config{
+<<<<<<< HEAD
 			Suite:    key.G2.(Suite),
 			Key:      newPrivs[newIdx],
 			NewNodes: newGroup,
@@ -526,12 +633,26 @@ func TestDKGResharingNewNode(t *testing.T) {
 		}
 
 		handlers[i], err = NewHandler(nets[i], conf, log.DefaultLogger)
+=======
+			Suite:     key.G2.(Suite),
+			Key:       newPrivs[newIdx],
+			NewNodes:  newGroup,
+			OldNodes:  oldGroup,
+			Threshold: newT,
+		}
+
+		handlers[i], err = NewHandler(nets[i], conf)
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		require.NoError(t, err)
 		require.True(t, handlers[i].newNode)
 		require.False(t, handlers[i].oldNode)
 		require.Equal(t, handlers[i].nidx, newIdx)
 		dkgServer := testDKGServer{h: handlers[i]}
+<<<<<<< HEAD
 		listeners[i] = net.NewTCPGrpcListener(newPrivs[newIdx].Public.Addr, &dkgServer)
+=======
+		listeners[i] = net.NewTCPGrpcListener(newPrivs[newIdx].Public.Addr, &net.DefaultService{D: &dkgServer})
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		go listeners[i].Start()
 
 	}
@@ -543,7 +664,10 @@ func TestDKGResharingNewNode(t *testing.T) {
 	}()
 
 	finished := make(chan int, total)
+<<<<<<< HEAD
 	quitAll := make(chan bool)
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	goDkg := func(idx int) {
 		if idx < oldN {
 			go handlers[idx].Start()
@@ -558,8 +682,11 @@ func TestDKGResharingNewNode(t *testing.T) {
 			finished <- idx
 		case err := <-errCh:
 			require.NoError(t, err)
+<<<<<<< HEAD
 		case <-quitAll:
 			return
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 		case <-time.After(3 * time.Second):
 			fmt.Println("timeout")
 			t.Fatal("not finished in time")
@@ -573,6 +700,7 @@ func TestDKGResharingNewNode(t *testing.T) {
 	for i := 0; i < newN; i++ {
 		<-finished
 	}
+<<<<<<< HEAD
 	close(quitAll)
 }
 
@@ -722,4 +850,6 @@ func TestDKGResharingPartial2(t *testing.T) {
 		//}
 		/*}*/
 	}
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 }

@@ -6,7 +6,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+<<<<<<< HEAD
 	"math"
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 
 	kyber "go.dedis.ch/kyber/v3"
 	"go.dedis.ch/kyber/v3/share"
@@ -128,8 +131,13 @@ func (i *Identity) FromTOML(t interface{}) error {
 }
 
 // TOML returns a empty TOML-compatible version of the public key
+<<<<<<< HEAD
 func (i *Identity) TOML() interface{} {
 	hex := PointToString(i.Key)
+=======
+func (p *Identity) TOML() interface{} {
+	hex := PointToString(p.Key)
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	return &PublicTOML{
 		Address: i.Addr,
 		Key:     hex,
@@ -240,17 +248,29 @@ type ShareTOML struct {
 // private distributed polynomial.
 type DistPublic struct {
 	Coefficients []kyber.Point
+<<<<<<< HEAD
 }
 
 // Key returns the first coefficient as representing the public key to be used
 // to verify signatures issued by the distributed key.
 func (d *DistPublic) Key() kyber.Point {
 	return d.Coefficients[0]
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 }
 
 // DistPublicTOML is a TOML compatible value of a DistPublic
 type DistPublicTOML struct {
 	Coefficients []string
+<<<<<<< HEAD
+=======
+}
+
+// Key returns the first coefficient as representing the public key to be used
+// to verify signatures issued by the distributed key.
+func (d *DistPublic) Key() kyber.Point {
+	return d.Coefficients[0]
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 }
 
 // TOML returns a TOML-compatible version of d
@@ -353,7 +373,42 @@ func (b *BeaconSignature) RawSig() []byte {
 	return s
 }
 
+<<<<<<< HEAD
 // DefaultThreshold return floor(n * 2/3) + 1
+=======
+// PointToString returns a hex-encoded string representation of the given point.
+func PointToString(p kyber.Point) string {
+	buff, _ := p.MarshalBinary()
+	return hex.EncodeToString(buff)
+}
+
+// ScalarToString returns a hex-encoded string representation of the given scalar.
+func ScalarToString(s kyber.Scalar) string {
+	buff, _ := s.MarshalBinary()
+	return hex.EncodeToString(buff)
+}
+
+// StringToPoint unmarshals a point in the given group from the given string.
+func StringToPoint(g kyber.Group, s string) (kyber.Point, error) {
+	buff, err := hex.DecodeString(s)
+	if err != nil {
+		return nil, err
+	}
+	p := g.Point()
+	return p, p.UnmarshalBinary(buff)
+}
+
+// StringToScalar unmarshals a scalar in the given group from the given string.
+func StringToScalar(g kyber.Group, s string) (kyber.Scalar, error) {
+	buff, err := hex.DecodeString(s)
+	if err != nil {
+		return nil, err
+	}
+	sc := g.Scalar()
+	return sc, sc.UnmarshalBinary(buff)
+}
+
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 func DefaultThreshold(n int) int {
 	return int(math.Floor(float64((n*2))/3.0)) + 1
 }

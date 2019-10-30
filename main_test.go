@@ -1,7 +1,10 @@
 package main
 
 import (
+<<<<<<< HEAD
 	"bytes"
+=======
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	"fmt"
 	gnet "net"
 	"os"
@@ -16,11 +19,19 @@ import (
 	"github.com/dedis/drand/fs"
 	"github.com/dedis/drand/key"
 	"github.com/dedis/drand/test"
+<<<<<<< HEAD
 	"github.com/kabukky/httpscerts"
 	"github.com/nikkolasg/slog"
 	"go.dedis.ch/kyber/v3"
 	"go.dedis.ch/kyber/v3/pairing/bn256"
 	"go.dedis.ch/kyber/v3/share"
+=======
+	"github.com/dedis/kyber"
+	"github.com/dedis/kyber/pairing/bn256"
+	"github.com/dedis/kyber/share"
+	"github.com/kabukky/httpscerts"
+	"github.com/nikkolasg/slog"
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 
 	"github.com/stretchr/testify/require"
 )
@@ -119,6 +130,7 @@ func TestGroup(t *testing.T) {
 	if yes, err := fs.Exists(extraName); !yes || err != nil {
 		t.Fatal(err.Error())
 	}
+<<<<<<< HEAD
 
 	//test valid merge
 	cmd = exec.Command("drand", "--folder", tmpPath, "group", "--group", groupPath, extraName)
@@ -143,6 +155,20 @@ func TestGroup(t *testing.T) {
 	}
 	defer emptyFile.Close()
 	cmd = exec.Command("drand", "--folder", tmpPath, "group", "--group", emptyGroupPath, names[0])
+=======
+
+	//test valid merge
+	cmd = exec.Command("drand", "--folder", tmpPath, "group", "--group", groupPath, extraName)
+	out, err = cmd.CombinedOutput()
+	fmt.Println(string(out))
+
+	//expectedOut = "Copy the following snippet into a new_group.toml file and give it to the upgrade command to do the resharing."
+	require.True(t, strings.Contains(string(out), expectedOut))
+
+	//test could not load group file
+	wrongGroupPath := "not_here"
+	cmd = exec.Command("drand", "--folder", tmpPath, "group", "--group", wrongGroupPath, names[0])
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	out, err = cmd.CombinedOutput()
 	fmt.Println(string(out))
 	require.Error(t, err)
@@ -164,6 +190,15 @@ func TestStartAndStop(t *testing.T) {
 	if e, ok := err.(*exec.ExitError); ok && e.Success() {
 		t.Fatal(err)
 	}
+<<<<<<< HEAD
+=======
+	cmd = exec.Command("drand", "-c", tmpPath, "stop")
+	cmd.Env = append(os.Environ(), varEnv+"=1")
+	err = cmd.Run()
+	if e, ok := err.(*exec.ExitError); ok && e.Success() {
+		t.Fatal(err)
+	}
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 }
 
 func TestStartBeacon(t *testing.T) {
@@ -235,7 +270,11 @@ func TestStartWithoutGroup(t *testing.T) {
 	fs.SaveShare(share)
 
 	// fake dkg outuput
+<<<<<<< HEAD
 	keyStr := "0776a00e44dfa3ab8cff6b78b430bf16b9f8d088b54c660722a35f5034abf3ea4deb1a81f6b9241d22185ba07c37f71a67f94070a71493d10cb0c7e929808bd10cf2d72aeb7f4e10a8b0e6ccc27dad489c9a65097d342f01831ed3a9d0a875b770452b9458ec3bca06a5d4b99a5ac7f41ee5a8add2020291eab92b4c7f2d449f"
+=======
+	keyStr := "012067064287f0d81a03e575109478287da0183fcd8f3eda18b85042d1c8903ec8160c56eb6d5884d8c519c30bfa3bf5181f42bcd2efdbf4ba42ab0f31d13c97e9552543be1acf9912476b7da129d7c7e427fbafe69ac5b635773f488b8f46f3fc40c673b93a08a20c0e30fd84de8a89adb6fb95eca61ef2fff66527b3be4912de"
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	fakeKey, _ := key.StringToPoint(key.G2, keyStr)
 	distKey := &key.DistPublic{
 		Coefficients: []kyber.Point{fakeKey},
@@ -326,8 +365,12 @@ func TestClientTLS(t *testing.T) {
 	fs.SaveGroup(group)
 
 	// fake dkg outuput
+<<<<<<< HEAD
 	keyStr := "0776a00e44dfa3ab8cff6b78b430bf16b9f8d088b54c660722a35f5034abf3ea4deb1a81f6b9241d22185ba07c37f71a67f94070a71493d10cb0c7e929808bd10cf2d72aeb7f4e10a8b0e6ccc27dad489c9a65097d342f01831ed3a9d0a875b770452b9458ec3bca06a5d4b99a5ac7f41ee5a8add2020291eab92b4c7f2d449f"
 
+=======
+	keyStr := "012067064287f0d81a03e575109478287da0183fcd8f3eda18b85042d1c8903ec8160c56eb6d5884d8c519c30bfa3bf5181f42bcd2efdbf4ba42ab0f31d13c97e9552543be1acf9912476b7da129d7c7e427fbafe69ac5b635773f488b8f46f3fc40c673b93a08a20c0e30fd84de8a89adb6fb95eca61ef2fff66527b3be4912de"
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	fakeKey, _ := test.StringToPoint(keyStr)
 	distKey := &key.DistPublic{
 		Coefficients: []kyber.Point{fakeKey},
@@ -350,7 +393,11 @@ func TestClientTLS(t *testing.T) {
 
 	cmd := exec.Command("drand", "get", "private", "--tls-cert", certPath, groupPath)
 	out, err := cmd.CombinedOutput()
+<<<<<<< HEAD
 	fmt.Println("get private = ", string(out))
+=======
+	fmt.Println(string(out))
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	require.NoError(t, err)
 
 	// XXX Commented out test since we can't "fake" anymore in the same way
@@ -380,6 +427,7 @@ func TestClientTLS(t *testing.T) {
 
 	cmd = exec.Command("drand", "get", "cokey", "--tls-cert", certPath, "--nodes", addr, groupPath)
 	out, err = cmd.CombinedOutput()
+<<<<<<< HEAD
 	//fmt.Println(string(out))
 
 	expectedOutput := keyStr
@@ -387,13 +435,22 @@ func TestClientTLS(t *testing.T) {
 	//fmt.Printf("expected = %s\n", expectedOutput)
 	//fmt.Printf("contains ? %v\n", strings.Contains(string(out), expectedOutput))
 	require.Contains(t, string(out), expectedOutput)
+=======
+	fmt.Println(string(out))
+	expectedOutput := "012067064287f0d81a03e575109478287da0183fcd8f3eda18b85042d1c8903ec8160c56eb6d5884d8c519c30bfa3bf5181f42bcd2efdbf4ba42ab0f31d13c97e9552543be1acf9912476b7da129d7c7e427fbafe69ac5b635773f488b8f46f3fc40c673b93a08a20c0e30fd84de8a89adb6fb95eca61ef2fff66527b3be4912de"
+	require.True(t, strings.Contains(string(out), expectedOutput))
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	require.NoError(t, err)
 
 	cmd = exec.Command("drand", "--verbose", "2", "show", "share", "--control", ctrlPort)
 	out, err = cmd.CombinedOutput()
 	fmt.Println(string(out))
+<<<<<<< HEAD
 	expectedOutput = "0000000000000000000000000000000000000000000000000000000000000001"
 
+=======
+	expectedOutput = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE="
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	require.True(t, strings.Contains(string(out), expectedOutput))
 	require.NoError(t, err)
 
@@ -410,7 +467,11 @@ func TestClientTLS(t *testing.T) {
 	cmd = exec.Command("drand", "show", "cokey", "--control", ctrlPort)
 	out, err = cmd.CombinedOutput()
 	fmt.Println(string(out))
+<<<<<<< HEAD
 	expectedOutput = keyStr
+=======
+	expectedOutput = "ASBnBkKH8NgaA+V1EJR4KH2gGD/Njz7aGLhQQtHIkD7IFgxW621YhNjFGcML+jv1GB9CvNLv2/S6QqsPMdE8l+lVJUO+Gs+ZEkdrfaEp18fkJ/uv5prFtjV3P0iLj0bz/EDGc7k6CKIMDjD9hN6Kia22+5Xsph7y//ZlJ7O+SRLe"
+>>>>>>> 246580c89478d335ddfbe1c84b8e3afc01153128
 	require.True(t, strings.Contains(string(out), expectedOutput))
 	require.NoError(t, err)
 }
