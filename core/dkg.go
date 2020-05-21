@@ -35,27 +35,31 @@ type dkgBoard struct {
 	justCh    chan dkg.AuthJustifBundle
 	client    net.ProtocolClient
 	nodes     []*key.Node
+	localID   *key.Identity
+	local     proto.ProtocolServer
 	isReshare bool
 }
 
 // newBoard is to be used when starting a new DKG protocol from scratch
-func newBoard(l log.Logger, client net.ProtocolClient, group *key.Group) *dkgBoard {
-	return initBoard(l, client, group.Nodes)
+func newBoard(l log.Logger, self *key.Identity, local proto.ProtocolServer, client net.ProtocolClient, group *key.Group) *dkgBoard {
+	return initBoard(l, self, local, client, group.Nodes)
 }
 
-func initBoard(l log.Logger, client net.ProtocolClient, nodes []*key.Node) *dkgBoard {
+func initBoard(l log.Logger, self *key.Identity, local proto.ProtocolServer, client net.ProtocolClient, nodes []*key.Node) *dkgBoard {
 	return &dkgBoard{
-		l:      l,
-		dealCh: make(chan dkg.AuthDealBundle, len(nodes)),
-		respCh: make(chan dkg.AuthResponseBundle, len(nodes)),
-		justCh: make(chan dkg.AuthJustifBundle, len(nodes)),
-		client: client,
-		nodes:  nodes,
+		l:       l,
+		dealCh:  make(chan dkg.AuthDealBundle, len(nodes)),
+		respCh:  make(chan dkg.AuthResponseBundle, len(nodes)),
+		justCh:  make(chan dkg.AuthJustifBundle, len(nodes)),
+		client:  client,
+		nodes:   nodes,
+		localID: self,
+		local:   local,
 	}
 }
 
 // newReshareBoard is to be used when running a resharing protocol
-func newReshareBoard(l log.Logger, client net.ProtocolClient, oldGroup, newGroup *key.Group) *dkgBoard {
+func newReshareBoard(l log.Logger, self *key.Identity, local proto.ProtocolServer, client net.ProtocolClient, oldGroup, newGroup *key.Group) *dkgBoard {
 	// takes all nodes and new nodes, without duplicates
 	var nodes []*key.Node
 	tryAppend := func(n *key.Node) {
@@ -77,7 +81,7 @@ func newReshareBoard(l log.Logger, client net.ProtocolClient, oldGroup, newGroup
 		tryAppend(n)
 	}
 
-	board := initBoard(l, client, nodes)
+	board := initBoard(l, self, local, client, nodes)
 	board.isReshare = true
 	return board
 }
@@ -189,7 +193,12 @@ func (b *dkgBoard) broadcastPacket(packet *pdkg.Packet, t string) {
 			Dkg: packet,
 		}
 		for _, node := range b.nodes {
-			_, err := b.client.ReshareDKG(context.Background(), node, rpacket)
+			var err error
+			if node.Key == b.localID.Key {
+				_, err = b.local.ReshareDKG(context.Background(), rpacket)
+			} else {
+				_, err = b.client.ReshareDKG(context.Background(), node, rpacket)
+			}
 			if err != nil {
 				b.l.Debug("board_reshare", "broadcast_packet", "to", node.Address(), "err", err)
 				continue
@@ -201,7 +210,12 @@ func (b *dkgBoard) broadcastPacket(packet *pdkg.Packet, t string) {
 			Dkg: packet,
 		}
 		for _, node := range b.nodes {
-			_, err := b.client.FreshDKG(context.Background(), node, rpacket)
+			var err error
+			if node.Key == b.localID.Key {
+				_, err = b.local.FreshDKG(context.Background(), rpacket)
+			} else {
+				_, err = b.client.FreshDKG(context.Background(), node, rpacket)
+			}
 			if err != nil {
 				b.l.Debug("board", "broadcast_packet", "to", node.Address(), "err", err)
 				continue
