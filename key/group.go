@@ -12,7 +12,6 @@ import (
 	"sort"
 	"time"
 
-	"github.com/BurntSushi/toml"
 	kyber "github.com/drand/kyber"
 	dkg "github.com/drand/kyber/share/dkg"
 	"golang.org/x/crypto/blake2b"
@@ -117,9 +116,7 @@ func (g *Group) Len() int {
 }
 
 func (g *Group) String() string {
-	var b bytes.Buffer
-	_ = toml.NewEncoder(&b).Encode(g.TOML())
-	return b.String()
+	return ""
 }
 
 // Equal indicates if two groups are equal

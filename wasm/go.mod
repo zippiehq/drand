@@ -2,6 +2,10 @@ module github.com/drand/drand/wasm
 
 go 1.14
 
-require github.com/drand/drand v0.9.3
+require (
+	github.com/drand/drand v1.0.0-rc1
+	github.com/drand/kyber v1.1.1
+	github.com/drand/kyber-bls12381 v0.1.0
+)
 
 replace github.com/drand/drand => ../
