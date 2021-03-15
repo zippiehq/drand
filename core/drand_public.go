@@ -89,11 +89,11 @@ func (d *Drand) PublicRandStream(req *drand.PublicRandRequest, stream drand.Publ
 	addr := net.RemoteAddress(stream.Context())
 	done := make(chan error, 1)
 	send := func(b *chain.Beacon) bool {
-		err := stream.Send(beaconToProto(b)) != nil
-		err2 := stream.Context().Err() != nil
-		if err || err2 {
+		err := stream.Send(beaconToProto(b))
+		err2 := stream.Context().Err()
+		if err != nil || err2 != nil {
 			d.log.Error("stream_to", addr, "stop", err)
-			<-done
+			done <- err
 			return false
 		}
 		return true
