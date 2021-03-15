@@ -88,37 +88,35 @@ func (d *Drand) PublicRandStream(req *drand.PublicRandRequest, stream drand.Publ
 	}
 	addr := net.RemoteAddress(stream.Context())
 	done := make(chan error, 1)
+	send := func(b *chain.Beacon) bool {
+		err := stream.Send(beaconToProto(b)) != nil
+		err2 := stream.Context().Err() != nil
+		if err || err2 {
+			d.log.Error("stream_to", addr, "stop", err)
+			<-done
+			return false
+		}
+		return true
+	}
 	d.log.Debug("request", "stream", "from", addr, "round", req.GetRound())
 	if req.GetRound() != 0 && req.GetRound() <= lastb.Round {
 		// we need to stream from store first
-		var err error
 		b.Store().Cursor(func(c chain.Cursor) {
 			for bb := c.Seek(req.GetRound()); bb != nil; bb = c.Next() {
-				if err = stream.Send(beaconToProto(bb)); err != nil {
-					d.log.Debug("stream", err)
+				if !send(bb) {
 					return
 				}
 			}
 		})
-		if err != nil {
-			return err
-		}
 	}
 	// then we can stream from any new rounds
 	// register a callback for the duration of this stream
 	d.beacon.AddCallback(addr, func(b *chain.Beacon) {
-		err := stream.Send(&drand.PublicRandResponse{
-			Round:             b.Round,
-			Signature:         b.Signature,
-			PreviousSignature: b.PreviousSig,
-			Randomness:        b.Randomness(),
-		})
-		// if connection has a problem, we drop the callback
-		if err != nil {
-			d.beacon.RemoveCallback(addr)
-			done <- err
+		if !send(b) {
+			return
 		}
 	})
+	defer d.beacon.RemoveCallback(addr)
 	return <-done
 }
 
