@@ -515,7 +515,6 @@ func TestDrandFollowChain(tt *testing.T) {
 	require.NoError(tt, err)
 
 	// TEST setup a new node and fetch history
-
 	newNode := dt.SetupNewNodes(1)[0]
 	newClient, err := net.NewControlClient(newNode.drand.opts.controlPort)
 	require.NoError(tt, err)
@@ -528,13 +527,13 @@ func TestDrandFollowChain(tt *testing.T) {
 	select {
 	case <-errCh:
 	case <-time.After(100 * time.Millisecond):
-		tt.Fatal("should have errored")
+		require.True(tt, false, "should have errored")
 	}
 	_, errCh, _ = newClient.StartFollowChain(ctx, "tutu", addrToFollow, tls, 10000)
 	select {
 	case <-errCh:
 	case <-time.After(100 * time.Millisecond):
-		tt.Fatal("should have errored")
+		require.True(tt, false, "should have errored")
 	}
 
 	fn := func(upTo, exp uint64) {
@@ -556,8 +555,8 @@ func TestDrandFollowChain(tt *testing.T) {
 					break
 				}
 				require.NoError(tt, e)
-			case <-time.After(1 * time.Second):
-				tt.FailNow()
+			case <-time.After(2 * time.Second):
+				require.True(tt, false, " OUTTIME")
 			}
 		}
 		// cancel the operation
@@ -572,7 +571,9 @@ func TestDrandFollowChain(tt *testing.T) {
 		require.Equal(tt, exp, lastB.Round, "found %d vs expected %d", lastB.Round, exp)
 	}
 	fn(resp.GetRound()-2, resp.GetRound()-2)
+	// there is no meaning into fetching again to 0
 	time.Sleep(200 * time.Millisecond)
+	fmt.Println("JUST STARTING LAST ONE")
 	fn(0, resp.GetRound())
 }
 
@@ -608,7 +609,7 @@ func TestDrandPublicStreamProxy(t *testing.T) {
 	if !ok {
 		t.Fatal("expected beacon")
 	}
-	require.Equal(t, beacon.Round(), resp.Round()+1)
+	require.Equal(t, resp.Round()+1, beacon.Round())
 	nTry := 4
 	// we expect the next one now
 	initRound := resp.Round() + 2
