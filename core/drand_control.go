@@ -848,6 +848,7 @@ func (d *Drand) StartFollowChain(req *drand.StartFollowRequest, stream drand.Con
 	defer cbStore.RemoveCallback(addr)
 	syncer := beacon.NewSyncManager(d.log, cbStore, info, d.privGateway, d.opts.clock)
 	go syncer.Run()
+	defer syncer.Stop()
 	syncer.RequestSync(peers, req.GetUpTo())
 
 	// wait for all the callbacks to be called and progress sent before returning

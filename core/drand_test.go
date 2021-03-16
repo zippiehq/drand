@@ -561,7 +561,6 @@ func TestDrandFollowChain(tt *testing.T) {
 		}
 		// cancel the operation
 		cancel()
-
 		// check if the beacon is in the database
 		store, err := newNode.drand.createBoltStore()
 		require.NoError(tt, err)
@@ -571,9 +570,7 @@ func TestDrandFollowChain(tt *testing.T) {
 		require.Equal(tt, exp, lastB.Round, "found %d vs expected %d", lastB.Round, exp)
 	}
 	fn(resp.GetRound()-2, resp.GetRound()-2)
-	// there is no meaning into fetching again to 0
 	time.Sleep(200 * time.Millisecond)
-	fmt.Println("JUST STARTING LAST ONE")
 	fn(0, resp.GetRound())
 }
 

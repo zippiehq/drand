@@ -13,7 +13,7 @@ import (
 	"github.com/drand/drand/log"
 	"github.com/drand/drand/net"
 	proto "github.com/drand/drand/protobuf/drand"
-	clock "github.com/jonboulle/clockwork"
+	cl "github.com/jonboulle/clockwork"
 )
 
 // SyncManager manages all the sync requests to other peers. It performs a
@@ -21,7 +21,7 @@ import (
 // sync requests.
 type SyncManager struct {
 	log    log.Logger
-	clock  clock.Clock
+	clock  cl.Clock
 	store  chain.Store
 	info   *chain.Info
 	client net.ProtocolClient
@@ -44,7 +44,9 @@ var syncExpiryFactor = 2
 // how much sync request do we allow to buffer
 var syncQueueRequest = 3
 
-func NewSyncManager(l log.Logger, store chain.Store, info *chain.Info, client net.ProtocolClient, clock clock.Clock) *SyncManager {
+// NewSyncManager returns a sync manager that will use the given store to store
+// newly synced beacon.
+func NewSyncManager(l log.Logger, store chain.Store, info *chain.Info, client net.ProtocolClient, clock cl.Clock) *SyncManager {
 	return &SyncManager{
 		log:     l,
 		clock:   clock,
@@ -52,7 +54,7 @@ func NewSyncManager(l log.Logger, store chain.Store, info *chain.Info, client ne
 		info:    info,
 		client:  client,
 		period:  info.Period,
-		factor:  2,
+		factor:  syncExpiryFactor,
 		newReq:  make(chan requestInfo, syncQueueRequest),
 		newSync: make(chan *chain.Beacon, 1),
 		isDone:  false,
@@ -75,6 +77,10 @@ type requestInfo struct {
 	upTo  uint64
 }
 
+// RequestSync asks the sync manager to sync up with those peers up to the given
+// round. Depending on the current state of the syncing process, there might not
+// be a new process starting (for example if we already have the round
+// requested). upTo == 0 means the syncing process goes on forever.
 func (s *SyncManager) RequestSync(nodes []net.Peer, upTo uint64) {
 	s.newReq <- requestInfo{
 		nodes: nodes,
@@ -86,7 +92,7 @@ func (s *SyncManager) Run() {
 	// tracks the time of the last round we successfully synced
 	lastRoundTime := 0
 	// the context being used by the current sync process
-	lastCtx, cancel := context.WithCancel(context.Background())
+	lastCtx, cancel := context.WithCancel(context.Background()) // nolint
 	for {
 		select {
 		case request := <-s.newReq:
@@ -115,7 +121,7 @@ func (s *SyncManager) Run() {
 				lastCtx, cancel = context.WithCancel(context.Background())
 				go s.sync(lastCtx, request)
 			}
-		case _ = <-s.newSync:
+		case <-s.newSync:
 			// just received a new beacon from sync, we keep track of this time
 			lastRoundTime = int(time.Now().Unix())
 		case <-s.done:
@@ -160,7 +166,10 @@ func (s *SyncManager) tryNode(global context.Context, upTo uint64, n net.Peer) b
 	for {
 		select {
 		case beaconPacket := <-beaconCh:
-			s.log.Debug("sync_manager", "new_beacon_fetched", "with_peer", n.Address(), "from_round", last.Round+1, "got_round", beaconPacket.GetRound())
+			s.log.Debug("sync_manager", "new_beacon_fetched",
+				"with_peer", n.Address(),
+				"from_round", last.Round+1,
+				"got_round", beaconPacket.GetRound())
 			beacon := protoToBeacon(beaconPacket)
 
 			// verify the signature validity
@@ -208,11 +217,11 @@ type SyncStream interface {
 }
 
 // SyncChain holds the receiver logic to reply to a sync request
-func SyncChain(log log.Logger, store CallbackStore, req SyncRequest, stream SyncStream) error {
+func SyncChain(l log.Logger, store CallbackStore, req SyncRequest, stream SyncStream) error {
 	fromRound := req.GetFromRound()
 	addr := net.RemoteAddress(stream.Context())
-	id := addr + strconv.Itoa(rand.Int())
-	log.Debug("syncer", "sync_request", "from", addr, "from_round", fromRound)
+	id := addr + strconv.Itoa(rand.Int()) // nolint
+	l.Debug("syncer", "sync_request", "from", addr, "from_round", fromRound)
 
 	last, err := store.Last()
 	if err != nil {
@@ -225,7 +234,7 @@ func SyncChain(log log.Logger, store CallbackStore, req SyncRequest, stream Sync
 	var done = make(chan error, 1)
 	send := func(b *chain.Beacon) bool {
 		if err = stream.Send(beaconToProto(b)); err != nil {
-			log.Debug("syncer", "streaming_send", "err", err)
+			l.Debug("syncer", "streaming_send", "err", err)
 			done <- err
 			return false
 		}
