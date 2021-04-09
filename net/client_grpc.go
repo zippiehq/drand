@@ -32,7 +32,7 @@ type grpcClient struct {
 	manager *CertManager
 }
 
-var defaultTimeout = 1 * time.Minute
+var defaultTimeout = 5 * time.Minute
 
 // NewGrpcClient returns an implementation of an InternalClient  and
 // ExternalClient using gRPC connections
